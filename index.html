@@ -988,7 +988,7 @@ function vMain(){
     <div class="mainmap">
       <div class="maphead"><div class="mt">皇 宫 舆 图</div>
         <div class="md">点击图上地点行动 · 每次消耗 1 点行动力 · 用尽后手动进入下一月</div></div>
-      <div class="map-canvas"><img src="palace-map.jpg" alt="皇宫舆图">${map}</div>
+      <div class="map-canvas"><img src="20261123.jpg" alt="皇宫舆图" onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('afterbegin','<div style=&quot;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#a00;font-size:13px;text-align:center;padding:20px&quot;>⚠ 底图未加载<br>请确认 20261123.jpg 已上传<br>且与 index.html 在同一目录</div>')">${map}</div>
       <div class="hint" style="margin-top:8px">📍 图上标记处即可前往；灰色为你当前不可进入之地。</div>
       <button class="btn next-month ${t.ap<=0?'urgent':''}" data-a="nextMonth">📅 进入下一月${t.ap<=0?' · 行动力已耗尽':''}</button>
       ${c.route==='MAID'&&c.rank==='ZHANG_SHI'?`<button class="btn primary" style="margin-top:14px" data-a="openPanel" data-p="transit">⚖️ 掌事姑姑 · 人生抉择</button>`:''}
