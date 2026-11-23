@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#2b2320">
+<title>深宫录 · 试玩原型</title>
+<style>
+:root{
+  --bg:#1c1815; --paper:#f3e9d6; --paper2:#e9dcc2; --ink:#2b2320; --ink2:#5b4e42;
+  --line:#c8b48e; --gold:#b8913f; --red:#8f2f26; --red2:#b23a2e; --jade:#3f6b5b;
+  --blue:#39536e; --muted:#8a7a63; --white:#fffaf0; --shadow:rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"Songti SC","STSong","SimSun","Noto Serif SC",serif;
+  background:radial-gradient(circle at 50% 0%,#3a3029,#1c1815 70%);
+  color:var(--ink);display:flex;justify-content:center;
+  overflow:hidden;user-select:none;
+}
+#app{
+  width:100%;max-width:460px;height:100dvh;background:var(--paper);
+  position:relative;display:flex;flex-direction:column;
+  box-shadow:0 0 40px var(--shadow);overflow:hidden;
+}
+.screen{flex:1;display:flex;flex-direction:column;min-height:0;animation:fade .28s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;padding:16px}
+
+/* 通用 */
+.title{font-size:26px;letter-spacing:6px;text-align:center;color:var(--red);font-weight:700}
+.sub{font-size:12px;color:var(--muted);text-align:center;letter-spacing:2px;margin-top:6px}
+.sec-title{font-size:15px;color:var(--red);border-left:3px solid var(--red);padding-left:8px;margin:14px 0 10px;letter-spacing:1px}
+.hint{font-size:11px;color:var(--muted);line-height:1.7}
+.card{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:12px;
+  box-shadow:0 2px 6px rgba(90,70,40,.08)}
+.btn{display:block;width:100%;padding:13px;margin:8px 0;background:var(--paper2);border:1px solid var(--line);
+  border-radius:6px;color:var(--ink);font-size:15px;font-family:inherit;letter-spacing:2px;cursor:pointer;transition:.15s}
+.btn:active{transform:scale(.98);background:#ddcdae}
+.btn.primary{background:linear-gradient(180deg,var(--red2),var(--red));color:#fff;border-color:var(--red);font-weight:700}
+.btn.jade{background:linear-gradient(180deg,#4c816e,var(--jade));color:#fff;border-color:var(--jade)}
+.btn.blue{background:linear-gradient(180deg,#48688a,var(--blue));color:#fff;border-color:var(--blue)}
+.btn.ghost{background:transparent;color:var(--muted);border-style:dashed}
+.btn.sm{padding:8px;font-size:13px;margin:4px 0;letter-spacing:1px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--paper2);color:var(--ink2);border:1px solid var(--line)}
+.tag.hot{background:#f6e2dd;color:var(--red);border-color:#e5b9b0}
+
+/* 启动页 */
+.splash{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,#231d19,#2e251f);padding:30px;text-align:center}
+.seal{width:76px;height:76px;border:3px solid var(--gold);color:var(--gold);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:34px;letter-spacing:0;margin-bottom:22px;
+  box-shadow:0 0 0 4px #231d19,0 0 0 5px var(--gold);font-weight:700}
+.splash h1{color:var(--paper);font-size:44px;letter-spacing:14px;font-weight:700;text-indent:14px}
+.splash .en{color:var(--gold);letter-spacing:5px;font-size:11px;margin-top:10px;opacity:.8}
+.splash .line{width:200px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:26px 0}
+.splash .btn{max-width:260px;background:transparent;color:var(--paper);border-color:var(--gold);letter-spacing:4px}
+.splash .btn:active{background:rgba(184,145,63,.2)}
+.splash .foot{position:absolute;bottom:16px;color:#6f6152;font-size:10px;letter-spacing:1px}
+
+/* 路线卡 */
+.route-card{position:relative;overflow:hidden;transition:.18s}
+.route-card:active{transform:scale(.99)}
+.route-card .rtop{display:flex;align-items:center;gap:10px}
+.route-card .ricon{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:17px;color:var(--ink);flex-shrink:0;font-weight:700;border:2px solid var(--gold);background:var(--paper2)}
+.route-card h3{font-size:18px;letter-spacing:2px}
+.route-card .rline{font-size:11px;color:var(--muted);margin-top:2px}
+.route-card ul{list-style:none;margin-top:10px;font-size:12px;color:var(--ink2);line-height:1.9}
+.route-card li:before{content:"· ";color:var(--gold);font-weight:700}
+.rc-consort .ricon{background:#f6e2dd;border-color:var(--red);color:var(--red)}
+.rc-maid .ricon{background:#e3efe8;border-color:var(--jade);color:var(--jade)}
+.rc-official .ricon{background:#e2e9f0;border-color:var(--blue);color:var(--blue)}
+
+/* 顶部状态栏 */
+.topbar{background:linear-gradient(180deg,#2e2620,#241d18);color:var(--paper);padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:2px solid var(--gold)}
+.tb-date{font-size:13px;letter-spacing:1px}.tb-date b{color:var(--gold);font-size:15px}
+.tb-stats{display:flex;gap:10px;font-size:11px;flex-wrap:wrap;justify-content:flex-end;max-width:60%}
+.tb-stats span{white-space:nowrap}.tb-stats b{color:#e9c877}
+.ap-dots{display:inline-flex;gap:2px;vertical-align:middle;margin-left:3px}
+.ap-dots i{width:6px;height:6px;border-radius:50%;background:#5a4e42;display:block}
+.ap-dots i.on{background:var(--gold)}
+.route-badge{font-size:10px;padding:1px 6px;border-radius:3px;border:1px solid var(--gold);color:var(--gold)}
+
+/* 主界面地图 */
+.mainmap{flex:1;overflow-y:auto;padding:14px}
+.maphead{text-align:center;margin-bottom:12px}
+.maphead .mt{font-size:18px;letter-spacing:4px;color:var(--ink)}
+.maphead .md{font-size:11px;color:var(--muted);margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.locate{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:12px 10px;text-align:center;
+  cursor:pointer;transition:.15s;position:relative;min-height:74px;display:flex;flex-direction:column;justify-content:center}
+.locate:active{transform:scale(.96)}
+.locate .li{font-size:22px;margin-bottom:2px}
+.locate .ln{font-size:14px;letter-spacing:1px}
+.locate .ld{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4}
+.locate.locked{filter:grayscale(1);opacity:.5;cursor:not-allowed}
+.locate .lk{position:absolute;top:4px;right:6px;font-size:10px;color:var(--red)}
+.locate.hotspot{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+
+/* 底部导航 */
+.navbar{display:flex;background:linear-gradient(180deg,#26201b,#1e1915);border-top:2px solid var(--gold);
+  flex-shrink:0;padding:6px 2px calc(6px + env(safe-area-inset-bottom))}
+.nav{flex:1;text-align:center;color:#9c8d78;cursor:pointer;padding:4px 0;transition:.15s}
+.nav:active{transform:scale(.92)}
+.nav .ni{font-size:19px;display:block;line-height:1.2}
+.nav .nl{font-size:10px;letter-spacing:1px;margin-top:2px;display:block}
+.nav.active{color:var(--gold)}
+.nav.hidden{display:none}
+
+/* 属性面板 */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.stat{background:var(--paper2);border-radius:6px;padding:8px 10px;font-size:12px}
+.stat .sv{float:right;font-weight:700;color:var(--red)}
+.bar{height:5px;background:#d8c8a6;border-radius:3px;margin-top:5px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--red));border-radius:3px}
+.kv{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.kv:last-child{border:none}.kv b{color:var(--red)}
+
+/* NPC / 好感 */
+.npc{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line)}
+.npc:last-child{border:none}
+.npc .face{width:38px;height:38px;border-radius:50%;background:var(--paper2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;color:var(--ink2)}
+.npc .info{flex:1;min-width:0}
+.npc .nn{font-size:13px;font-weight:700}
+.npc .nr{font-size:10px;color:var(--muted);margin:1px 0}
+.npc .stage{font-size:10px;color:var(--gold)}
+.affbar{height:6px;background:#e0d3b6;border-radius:3px;margin-top:4px;overflow:hidden}
+.affbar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--red2))}
+
+/* 弹窗 */
+.mask{position:absolute;inset:0;background:rgba(20,15,12,.72);display:flex;align-items:flex-end;z-index:30;
+  animation:fade .2s ease}
+.dialog{width:100%;max-height:88%;background:var(--paper);border-radius:14px 14px 0 0;overflow:hidden;
+  display:flex;flex-direction:column;animation:up .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+.dg-head{padding:16px 18px 10px;border-bottom:1px solid var(--line);text-align:center;position:relative;flex-shrink:0}
+.dg-head h2{font-size:18px;letter-spacing:3px;color:var(--red)}
+.dg-head .x{position:absolute;right:12px;top:12px;font-size:20px;color:var(--muted);cursor:pointer;line-height:1}
+.dg-body{padding:16px 18px;overflow-y:auto;flex:1}
+.story-text{font-size:14px;line-height:2;color:var(--ink);text-indent:2em;margin-bottom:16px;
+  background:var(--white);border:1px solid var(--line);border-radius:6px;padding:14px}
+.choices .btn{margin:7px 0}
+.result-line{font-size:13px;line-height:1.9;padding:8px 10px;background:var(--white);border-left:3px solid var(--gold);
+  border-radius:4px;margin:6px 0}
+.delta{color:var(--red);font-weight:700}.delta.neg{color:var(--jade)}
+
+/* 提示 toast */
+.toast{position:absolute;top:64px;left:50%;transform:translateX(-50%);background:rgba(35,28,23,.94);
+  color:var(--paper);padding:10px 18px;border-radius:24px;font-size:13px;z-index:50;letter-spacing:1px;
+  border:1px solid var(--gold);animation:fade .2s;max-width:90%;text-align:center}
+
+/* 存档槽 */
+.slot{display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--white);
+  border:1px solid var(--line);border-radius:8px;margin-bottom:9px}
+.slot .si{font-size:12px;line-height:1.6}
+.slot .si b{font-size:14px;color:var(--ink)}
+.slot .empty{color:var(--muted);font-style:italic}
+.slot .btn{width:auto;padding:7px 14px;margin:0;font-size:12px}
+
+.empty-tip{text-align:center;color:var(--muted);font-size:12px;padding:30px 10px;line-height:2}
+.foot-note{text-align:center;font-size:10px;color:var(--muted);padding:10px;line-height:1.8}
+.year-end{background:linear-gradient(180deg,#f6ead0,#ecd9b4);border:2px solid var(--gold);border-radius:10px;
+  padding:18px;text-align:center;margin:10px 0}
+.year-end h3{color:var(--red);letter-spacing:4px;font-size:20px;margin-bottom:10px}
+/* 结算明细 */
+.delta-list{display:flex;flex-wrap:wrap;gap:6px;padding:10px}
+.delta-chip{display:inline-block;font-size:12px;padding:5px 11px;border-radius:14px;border:1px solid var(--line);background:var(--paper2);white-space:nowrap}
+.delta-chip.up{color:var(--red);border-color:#e0b3aa;background:#f9ece8}
+.delta-chip.down{color:var(--jade);border-color:#a9c6b8;background:#eaf3ee}
+.delta-chip.aff{color:#6a4a8a;border-color:#c4add9;background:#f2eaf8}
+.delta-chip.attr{color:#8a6a1a;border-color:#d9c48a;background:#f8f2e0}
+/* 攻略 */
+.guide-row{display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px dashed var(--line);font-size:12px}
+.guide-row .gi{width:26px;height:26px;border-radius:50%;background:var(--paper2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px}
+.guide-row.done .gi{background:var(--jade);color:#fff}
+.guide-row.now{background:#f6ead0;border-left:3px solid var(--red)}
+.guide-row.now .gi{background:var(--red);color:#fff}
+.guide-row.ready .gi{background:var(--gold);color:#fff}
+.guide-row .gn{flex:1;min-width:0}
+.guide-row .gn b{font-size:13px}
+.guide-row .gc{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5}
+.guide-row .gs{font-size:11px;white-space:nowrap;text-align:right}
+.guide-row.done .gs{color:var(--jade)}
+.guide-row.now .gs{color:var(--red);font-weight:700}
+.guide-row.ready .gs{color:var(--gold)}
+/* 商店 / 侍从 / NPC操作 */
+.shop-item,.servant{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;background:var(--white);border:1px solid var(--line);border-radius:6px;margin-bottom:7px;font-size:12px;gap:8px}
+.npc-actions{display:flex;gap:4px;flex-shrink:0}
+.npc-actions .btn{padding:4px 8px;font-size:11px;width:auto;margin:0}
+.sec-badge{display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;background:var(--gold);color:#fff;margin-left:6px}
+/* 皇宫舆图：底图 + 热区 */
+.map-canvas{position:relative;width:100%;aspect-ratio:1000/1333;border:1px solid var(--line);
+  border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.18);background:var(--paper2)}
+.map-canvas img{display:block;width:100%;height:100%;object-fit:cover}
+.map-pin{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;
+  gap:2px;padding:2px;border:0;background:none;cursor:pointer;z-index:2;width:auto}
+.pin-ico{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:14px;background:rgba(255,250,240,.94);border:2px solid var(--red);
+  box-shadow:0 2px 5px rgba(0,0,0,.35)}
+.pin-name{font-size:10px;line-height:1.2;padding:1px 5px;border-radius:8px;white-space:nowrap;
+  background:rgba(43,35,32,.82);color:var(--white);letter-spacing:1px}
+.map-pin.locked .pin-ico{background:rgba(220,210,190,.85);border-color:var(--muted);filter:grayscale(.6)}
+.map-pin.locked .pin-name{background:rgba(90,80,70,.6);color:#e6ded0}
+.map-pin:active .pin-ico{transform:scale(.9)}
+/* 手动跨月按钮 + 行动力耗尽禁用态 */
+.btn.next-month{width:100%;margin-top:14px;padding:12px;font-size:15px;letter-spacing:2px;font-weight:700;
+  background:linear-gradient(135deg,#8e6b1f,#c9a227);color:#fff8e8;border:1px solid #7a5a18;
+  box-shadow:0 2px 8px rgba(140,105,30,.35)}
+.btn.next-month.urgent{animation:nmPulse 1.3s ease-in-out infinite}
+@keyframes nmPulse{0%,100%{box-shadow:0 0 4px rgba(190,60,50,.5)}50%{box-shadow:0 0 14px rgba(190,60,50,.95)}}
+.btn:disabled{opacity:.4;filter:grayscale(.7);cursor:not-allowed}
+/* 结局 */
+.ending-wrap{padding:30px 20px;text-align:center}
+.ending-seal{width:62px;height:62px;line-height:56px;margin:6px auto 18px;border:3px solid var(--red);
+  color:var(--red);font-size:32px;border-radius:8px;transform:rotate(-6deg)}
+.ending-title{font-size:25px;letter-spacing:8px;color:var(--red);font-weight:700}
+.ending-sub{font-size:12px;color:var(--muted);letter-spacing:3px;margin-top:8px}
+.ending-wrap .story-text{text-align:left}
+.ending-wrap .card{text-align:left}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+"use strict";
+/* ==================================================================
+   《深宫录》H5 试玩原型 —— 单文件自包含
+   配置数值全部对齐逻辑层 GameConfig；纯本地 localStorage 存档
+   ================================================================== */
+
+/* ---------- 1. 配置表（对齐 config/*.ts） ---------- */
+const CFG = {
+  startAge:{min:14,max:16},
+  actionMax:5, monthsPerYear:12, annualSilverBonus:30,
+  nameMin:2, nameMax:8,
+  sensitive:['皇帝','皇上','皇后','太子','太后','死','杀','妓','淫','妖','admin','管理员','系统'],
+  family:['COMMONER','LOW_OFFICIAL','SCHOLAR','OFFICIAL','NOBLE'],
+  familyInfo:{
+    COMMONER:{name:'布衣寒门',w:42,silver:30,titles:[['白身','布衣寒士'],['白身','乡间商户']],kin:['嫡女','庶女','养女'],
+      r:{appearance:[10,30],talent:[10,30],wit:[20,40],social:[0,15],constitution:[25,45]}},
+    LOW_OFFICIAL:{name:'小吏之家',w:28,silver:60,titles:[['九品','县衙主簿'],['八品','县衙县丞']],kin:['嫡女','庶女','侄女'],
+      r:{appearance:[20,40],talent:[20,40],wit:[25,45],social:[15,30],constitution:[25,45]}},
+    SCHOLAR:{name:'书香门第',w:17,silver:80,titles:[['七品','翰林编修'],['六品','国子监助教']],kin:['嫡女','庶女','侄女'],
+      r:{appearance:[25,45],talent:[35,60],wit:[30,50],social:[20,35],constitution:[20,40]}},
+    OFFICIAL:{name:'官宦世家',w:9,silver:120,titles:[['四品','六部郎中'],['五品','州府知州']],kin:['嫡女','庶女','侄女'],
+      r:{appearance:[35,55],talent:[30,50],wit:[35,55],social:[35,60],constitution:[25,45]}},
+    NOBLE:{name:'世家望族',w:4,silver:180,titles:[['一品','当朝丞相'],['二品','内阁大学士']],kin:['嫡女','庶女','侄女'],
+      r:{appearance:[45,65],talent:[40,60],wit:[40,60],social:[50,75],constitution:[30,50]}},
+  },
+  attrName:{appearance:'容貌',talent:'才情',wit:'心智',social:'人脉',constitution:'体质'},
+  routes:{
+    CONSORT:{name:'秀女开局',icon:'花',color:'red',tag:'争宠晋位 · 母凭子贵',
+      intro:'选秀入宫，依家世授官女子至贵人之位，于深宫步步为营。',
+      growth:'后宫争宠线：帝宠 + 威望双轨晋升，由入宫位份一路晋至皇后。',
+      features:['与嫔妃博弈：交好、拉拢、反击、刺探把柄','侍寝承宠积累帝宠，帝宠减免晋升威望门槛','贵人及以上可诞育子嗣，教养成人封爵光耀门楣'],
+      unlock:'解锁妃嫔博弈、皇帝互动、子嗣生育系统'},
+    MAID:{name:'宫女开局',icon:'帚',color:'jade',tag:'【可被宠幸转妃嫔】',
+      intro:'入宫为奴，供职六局，于夹缝中谋求出路。',
+      growth:'六局当差线：勤谨值晋升，粗使宫女→掌事姑姑。',
+      features:['六局当差积攒勤谨，分支抉择定终身','御花园偶遇皇帝，容貌与家世兼备者可破格进封','掌事姑姑二选一：承宠入妃嫔 / 考选转女官，资产继承不断档'],
+      unlock:'解锁宫女差事系统；转线后继承全部资产'},
+    OFFICIAL:{name:'女官开局',icon:'笔',color:'blue',tag:'【可邂逅朝臣、自主婚配】',
+      intro:'以才入仕，供职六局，凭功勋声望立身于朝。',
+      growth:'女官事业线：功勋 + 声望晋升，女史→尚宫。',
+      features:['六局公务积累功勋声望，典事起参与朝堂','四大点位邂逅文武朝臣，六阶段好感培养','好感满值触发求娶/赐婚，奉旨自主婚配，夫君助力职场'],
+      unlock:'解锁女官公务 + 朝臣婚恋系统（职级到典事后开放）'},
+  },
+  bureaus:[['SHANG_GONG','尚宫局','总领六局事务，掌诏敕文书'],['SHANG_YI','尚仪局','掌礼仪起居、朝会赞导'],
+    ['SHANG_FU','尚服局','掌服饰冠佩、宝物库藏'],['SHANG_SHI','尚食局','掌御膳菜品，可近圣驾'],
+    ['SHANG_QIN','尚寝局','掌寝殿陈设、园苑清扫'],['SHANG_GONG_WORK','尚功局','掌女红织造、考核百工'],
+    ['HUAN_YI','浣衣局','浆洗衣物、粗重杂役']],
+  ranks:{
+    CONSORT:[['GUAN_NV_ZI','官女子',0,0],['DA_YING','答应',15,20],['CHANG_ZAI','常在',35,35],['GUI_REN','贵人',60,50],
+      ['PIN','嫔',100,70],['FEI','妃',160,85],['GUI_FEI','贵妃',240,92],['HUANG_GUI_FEI','皇贵妃',320,96],['HUANG_HOU','皇后',400,99]],
+    MAID:[['CU_SHI','粗使宫女',0],['PU_TONG','普通宫女',40],['GUAN_SHI','管事宫女',90],['ZHANG_SHI','掌事姑姑',160]],
+    OFFICIAL:[['NV_SHI','女史',0,0],['ZHANG_SHI','掌事',60,20],['DIAN_SHI','典事',120,35],['SI_ZUO','司佐',200,50],
+      ['SI_SHI','司事',300,70],['SI_ZHENG','司正',420,90],['JU_CHENG','局丞',560,110],['JU_ZUO','局佐',720,130],
+      ['SHANG_SHU','尚属',900,150],['SHANG_GONG','尚宫',1200,180]],
+  },
+  salary:{CONSORT:[20,35,50,80,120,180,260,350,500],MAID:[15,22,32,45],OFFICIAL:[40,55,70,90,115,140,170,200,240,300]},
+  // 秀女入宫位份：家世定基础，嫡女可高一级；范围官女子～贵人
+  startRank:{
+    COMMONER:{base:'GUAN_NV_ZI'},
+    LOW_OFFICIAL:{base:'GUAN_NV_ZI',elite:'DA_YING'},
+    SCHOLAR:{base:'DA_YING',elite:'CHANG_ZAI'},
+    OFFICIAL:{base:'CHANG_ZAI',elite:'GUI_REN'},
+    NOBLE:{base:'GUI_REN'},
+  },
+  stages:[[96,'相许'],[81,'情深'],[61,'倾心'],[41,'欣赏'],[21,'初识'],[0,'陌生']],
+  favorStage:[[91,'独宠'],[71,'盛宠'],[51,'偏爱'],[31,'青睐'],[11,'平淡'],[0,'陌生']],
+  // 朝臣18名
+  ministers:[
+    ['min_c9','沈文清','文','九品','县衙主簿'],['min_c8','陆知微','文','八品','县衙县丞'],['min_c7','苏御史','文','七品','监察御史'],
+    ['min_c6','范通判','文','六品','州府通判'],['min_c5','欧阳修撰','文','五品','州府知州'],['min_c4','李侍郎','文','四品','六部侍郎'],
+    ['min_c3','张尚书','文','三品','六部尚书'],['min_c2','徐阁老','文','二品','内阁大学士'],['min_c1','当朝丞相','文','一品','当朝丞相'],
+    ['min_m9','赵巡尉','武','九品','巡检巡尉'],['min_m8','钱校尉','武','八品','禁军校尉'],['min_m7','孙守备','武','七品','边关守备'],
+    ['min_m6','周参将','武','六品','军营参将'],['min_m5','吴游击','武','五品','游击将军'],['min_m4','郑副将','武','四品','副将'],
+    ['min_m3','冯总兵','武','三品','镇守总兵'],['min_m2','楚大都督','武','二品','大都督'],['min_m1','护国大将军','武','一品','护国大将军'],
+  ],
+  // 嫔妃NPC 8名
+  consorts:[
+    ['cnp_dowager','章太后','太后','慈和宽厚、尊荣无双'],
+    ['cnp_empress','慕容婉','皇后','端肃持重、城府深沉'],['cnp_guifei','萧云艳','贵妃','骄矜泼辣、恃宠而骄'],
+    ['cnp_fei','沈含嫣','宠妃','柔婉善妒、外柔内狠'],['cnp_pin','董良人','庶妃','沉默寡言、明哲保身'],
+    ['cnp_zai','安常在','低位嫔妃','胆小怕事、心思单纯'],['cnp_ying','赵飞燕','丽妃','张扬妩媚、争强好胜'],
+    ['cnp_de','柳氏','德妃','温良恭俭、与世无争'],['cnp_ning','冷如月','宁嫔','清冷孤傲、不屑逢迎'],
+  ],
+  // 地点13个
+  // [id,名称,图标,说明,开放路线,热点解锁,x%,y%] —— 竖版底图坐标
+  locations:[
+    ['yuHuaYuan','御花园','🌸','偶遇皇帝/嫔妃/低阶朝臣，宠幸剧情点','ALL',1,27,58],
+    ['yangXinDian','养心殿','🏯','求见皇帝、递交折子、偶遇近臣','CONSORT_OFFICIAL',0,50,13],
+    ['gongDian','各宫宫殿','🏮','拜访嫔妃 NPC','CONSORT',0,50,22],
+    ['jingRenGong','景仁宫','👑','皇后居所 · 每月请安增长威望','CONSORT',0,50,32],
+    ['liuJuZhiFang','六局值房','📜','女官办公、宫女当差','MAID_OFFICIAL',0,77,66],
+    ['huanYiJu','浣衣局','🧺','底层差事','MAID',0,80,77],
+    ['chuXiuGong','储秀宫','🪞','后宫女子居所','CONSORT',0,42,67],
+    ['ciNingGong','慈宁宫','🕯️','太后居所 · 请安互动增长属性','ALL',0,27,30],
+    ['lengGong','冷宫','🌑','特殊剧情','CONSORT',0,88,84],
+    ['taiYiYuan','太医院','🌿','调养体质、购药','ALL',0,76,55],
+    ['gongMen','宫门','🚪','朝臣高频邂逅点','OFFICIAL',1,50,91],
+    ['hanLinYuan','翰林院','📖','文官专属邂逅点','OFFICIAL',1,80,38],
+    ['yanWuChang','演武场','⚔️','武官专属邂逅点','OFFICIAL',1,82,47],
+    ['selfRoom','居所','🛏️','休息、整理','ALL',0,58,67],
+  ],
+  // 好感互动增量
+  interact:{GIFT:8,POEM:10,ASSIST:12,COURT:6,GREET:3,HEART:9},
+  servantTpl:{
+    CONSORT:[['sc1','阿桃','贴身侍女，温柔细心'],['sc2','绿筠','针线宫女，手巧心细']],
+    MAID:[['sm1','小荷','同屋宫女，机灵乖巧'],['sm2','素云','浣衣姐妹，任劳任怨']],
+    OFFICIAL:[['so1','青竹','文书侍女，识文断字'],['so2','墨香','掌卷侍女，沉稳干练']],
+  },
+  shop:[
+    ['gift_rouge','胭脂盒',15,'gift',8,'送礼·好感+8'],
+    ['gift_tea','贡茶',25,'gift',12,'送礼·好感+12'],
+    ['gift_jade','玉佩',40,'gift',18,'送礼·好感+18'],
+    ['tonic','养颜丸',20,'attr','appearance:3','服用·容貌+3'],
+    ['book','古籍',30,'attr','talent:3','研读·才情+3'],
+  ],
+  guideNote:{
+    CONSORT:'帝宠可减免威望晋升门槛（至少保留三成）；威望与帝宠需同时达标。位分达「贵人」后可诞育子嗣。',
+    MAID:'积攒勤谨值逐级晋升；升至「掌事姑姑」后可抉择：承宠转妃嫔，或考选转女官。',
+    OFFICIAL:'功勋与声望需同时达标；职级达「典事」解锁朝臣邂逅；好感满 96 可求娶，夫君每月带来银两加成。',
+  },
+  sourceTip:[
+    ['prestige','威望','侍寝承宠、拜访嫔妃、宫廷事件'],
+    ['favor','帝宠','养心殿求见、御花园偶遇帝王'],
+    ['diligence','勤谨','六局当差、浣衣局差事'],
+    ['merit','功勋','女官公务、翰林唱和、差事'],
+    ['reputation','声望','公务办差、朝臣邂逅'],
+  ],
+};
+
+/* ---------- 2. 事件池（按地点+路线，数值读配置口径） ---------- */
+const EVENTS = {
+  yuHuaYuan:{
+    CONSORT:[
+      {t:'御花园·花间偶遇',x:'春日海棠盛放，你于花下偶遇一位嫔妃。她含笑看你，似有试探之意。',
+       c:[{l:'含笑行礼，主动交好',e:{prestige:4,favor:2},a:{cnp_fei:8},r:'你柔声寒暄，对方颔首微笑，好感渐生。'},
+          {l:'淡淡颔首，不卑不亢',e:{prestige:2},a:{cnp_fei:-2},r:'你守礼而退，她眸中闪过一丝玩味。'}]},
+      {t:'御花园·天家偶遇',x:'转过回廊，竟迎面遇上帝辇。你心头一紧，连忙见礼。',
+       c:[{l:'躬身问安，仪态得体',e:{favor:7,prestige:3},r:'帝王驻足看了你一眼，龙颜微悦。'},
+          {l:'低头规避，不敢仰视',e:{favor:-2,prestige:1},r:'你匆匆避开，帝辇渐行渐远。'}]},
+    ],
+    MAID:[
+      {t:'御花园·意外之遇',x:'你奉命来御花园修剪花枝，一时恍惚，竟撞见散步的帝王。',
+       c:[{l:'跪地请罪，楚楚可怜',e:{favor:8},r:'帝王并未发怒，反而多看了你两眼。'},
+          {l:'低头退下，不敢造次',e:{},r:'你悄悄退开，心跳久久难平。'}]},
+    ],
+    OFFICIAL:[
+      {t:'御花园·官员雅集',x:'几名低阶官员正在亭中论诗，见你经过，邀你同赏。',
+       c:[{l:'上前唱和，展露才情',e:{merit:8,reputation:4},a:{min_c7:10},r:'你的诗才令众人刮目相看。'},
+          {l:'远远避开，不涉是非',e:{merit:3},r:'你转身离去，专注本职。'}]},
+    ],
+  },
+  gongDian:{CONSORT:[
+    {t:'各宫·嫔妃拜访',x:'你备了薄礼前往拜访，主人家性情各异，需谨慎应对。',
+     c:[{l:'奉上礼品，真诚结交',e:{prestige:5},a:{cnp_de:9},r:'礼尚往来，气氛融洽。'},
+        {l:'言语试探，暗探口风',e:{prestige:3,wit:1},a:{cnp_guifei:-5},r:'对方似有所觉，笑意淡了。'}]},
+  ]},
+  liuJuZhiFang:{
+    MAID:[{t:'值房·当差',x:'尚宫派下今日的差事，值房内姐妹们各自忙碌。',
+      c:[{l:'认真当差，勤谨不怠',e:{diligence:12,silver:8},r:'管事姑姑点头赞许。'},
+         {l:'寻机偷懒歇息',e:{diligence:-4,constitution:5},r:'你稍作喘息，却被记了一笔。'}]}],
+    OFFICIAL:[{t:'值房·公务',x:'案头堆着待誊的文书，需今日处理完毕。',
+      c:[{l:'凝神处理，一丝不苟',e:{merit:14,reputation:5,silver:15},r:'文案无误，上司颇为满意。'},
+         {l:'草草了事',e:{merit:-6,reputation:-3},r:'敷衍的文书被打回重做。'}]}],
+  },
+  huanYiJu:{MAID:[
+    {t:'浣衣局·辛苦差事',x:'寒水中浆洗衣物，手指冻得通红。',
+     c:[{l:'咬牙坚持，勤谨当差',e:{diligence:15,constitution:2,silver:8},r:'一日的活计终于做完。'},
+        {l:'寻借口躲懒',e:{diligence:-8},r:'你被管事训斥了一顿。'}]},
+  ]},
+  yangXinDian:{
+    CONSORT:[{t:'养心殿·求见',x:'你递上牌子，得以觐见。帝王正批阅奏折。',
+      c:[{l:'展露才情，从容应对',e:{favor:6,prestige:3,talent:1},r:'帝颔首，留你多说了几句。'},
+         {l:'恭谨守礼，不多一言',e:{favor:1,prestige:2},r:'你安静退下，中规中矩。'},
+         {l:'承恩侍寝（贵人以上）',e:{favor:8,prestige:4},r:'是夜你得幸承恩。',special:'conceive'}]}],
+    OFFICIAL:[{t:'养心殿·递折',x:'你奉命递交折子，殿内偶遇一位近臣。',
+      c:[{l:'借机攀谈，递交名帖',e:{merit:6,reputation:3},r:'对方记下了你的名字。'},
+         {l:'公事公办，迅速退出',e:{merit:4},r:'你恪守本分，完成差事。'}]}],
+  },
+  gongMen:{OFFICIAL:[
+    {t:'宫门·邂逅朝臣',x:'晨光中，一位朝臣正欲入宫，与你擦肩而过。',
+     c:[{l:'主动见礼，攀谈几句',e:{reputation:3},a:{min_c6:12},r:'相谈甚欢，好感渐深。'},
+        {l:'低头快步走过',e:{},r:'你错过了这次机缘。'}]},
+  ]},
+  hanLinYuan:{OFFICIAL:[
+    {t:'翰林院·诗文唱和',x:'几位文官正在品茗论诗，见你驻足，邀你共赋。',
+     c:[{l:'即席赋诗，满座生辉',e:{merit:10,reputation:6,talent:2},a:{min_c5:14},r:'你的才名在翰林院传开。'},
+        {l:'谦辞婉拒',e:{reputation:2},r:'你含笑告辞，不失风度。'}]},
+  ]},
+  yanWuChang:{OFFICIAL:[
+    {t:'演武场·武将校演',x:'武将们正在校场演武，见你经过，有人抱拳致意。',
+     c:[{l:'上前见礼，赞其勇武',e:{reputation:5},a:{min_m6:13},r:'武将豪爽一笑，好感大增。'},
+        {l:'静静旁观',e:{merit:3},r:'你看罢演武，若有所思。'}]},
+  ]},
+  chuXiuGong:{CONSORT:[
+    {t:'储秀宫·后宫闲谈',x:'各宫女子聚在殿中闲话，话题绕不开圣眷与位分高低。',
+     c:[{l:'与众人和睦相处',e:{social:2,prestige:3},r:'你赢得了好人缘。'},
+        {l:'独坐一旁，暗中观察',e:{wit:2},r:'你将各人脾性暗记于心。'}]},
+  ]},
+  ciNingGong:{ALL:[
+    {t:'慈宁宫·太后召见',x:'太后遣人召你入慈宁宫，赐座闲话。她语气温和，句句却在考校你的分寸。',
+     c:[{l:'恭谨陪话，曲意承欢',e:{prestige:6,social:3},a:{cnp_dowager:10},r:'太后颔首，赏你一对金镯。'},
+        {l:'谨守本分，不多言辞',e:{prestige:3,constitution:2},a:{cnp_dowager:5},r:'太后赞你稳重知礼。'}]},
+  ]},
+  taiYiYuan:{ALL:[
+    {t:'太医院·调养',x:'太医为你诊脉，建议静养。',
+     c:[{l:'精心调养身体',e:{constitution:8,silver:-10},r:'体质有所提升。'},
+        {l:'不必费心，省下银钱',e:{},r:'你婉拒了调理。'}]},
+  ]},
+  lengGong:{CONSORT:[
+    {t:'冷宫·深处的低语',x:'冷宫墙垣斑驳，隐约传来幽幽叹息，令人心生恻隐。',
+     c:[{l:'送些衣物食物，积些阴德',e:{silver:-15,prestige:4},r:'你的善举，悄然传开。'},
+        {l:'远离是非，快步离开',e:{},r:'你转身离去，不愿牵涉。'}]},
+  ]},
+  selfRoom:{ALL:[
+    {t:'居所·静思',x:'回到居所，终于可以卸下防备，独自静思。',
+     c:[{l:'焚香静坐，调养心神',e:{constitution:6,wit:2},r:'心绪渐宁，若有所悟。'},
+        {l:'盘点近日所得',e:{prestige:2},r:'你将近日经历在心中过了一遍。'}]},
+  ]},
+};
+
+/* 每月开头自动触发的宫廷突发剧情（无选项，直接改变属性） */
+const MONTHLY_EVENTS={
+  ALL:[
+    {t:'乍暖还寒',x:'节气骤变，宫中不少人染了风寒。你日夜起居小心，仍觉头晕身倦。',e:{constitution:-6}},
+    {t:'宫中疫气',x:'某处宫室传出疫气，太医院忙着熬药防范，你也被迫饮了几碗苦药。',e:{constitution:-8,silver:-6}},
+    {t:'天家赏赐',x:'皇帝念及宫中勤勉之人，特下旨赏赐银两与缎匹。',e:{silver:22,prestige:4}},
+    {t:'旧疾复发',x:'入宫前的旧疾近日反复，太医令你静养调理。',e:{constitution:-9}},
+    {t:'贵人提携',x:'一位贵人偶然提起你的名字，为你说了几句好话。',e:{prestige:6,social:2}},
+    {t:'同僚倾轧',x:'有人暗中散布对你不利的言语，你费了不少心力才稳住局面。',e:{reputation:-5,wit:2}},
+    {t:'夜半惊梦',x:'连日劳神，你夜半惊醒，再难入眠，精神恍惚。',e:{constitution:-4,wit:2}},
+    {t:'太医院调理',x:'太医为你诊脉，开了几味温补的方子，身体渐觉舒泰。',e:{constitution:7,silver:-12}},
+    {t:'宫墙秋雨',x:'连绵阴雨困住宫道，你踩着湿滑的青石赶差，险些摔倒。',e:{constitution:-5,diligence:3}},
+  ],
+  CONSORT:[
+    {t:'后宫谗言',x:'有嫔妃在皇后面前进了谗言，你莫名被牵连，威望受损。',e:{prestige:-8,favor:-4}},
+    {t:'春日恩宠',x:'帝王多日未至各宫，今日忽然召你侍宴，恩宠正浓。',e:{favor:8,prestige:5}},
+    {t:'后宫倾轧',x:'两位嫔妃明争暗斗，你夹在中间左右为难，心力交瘁。',e:{prestige:-5,wit:3,constitution:-3}},
+    {t:'草原贡女',x:'新来的贡女姿色出众，一时风头无两，宫中人心浮动。',e:{favor:-6,prestige:-3}},
+  ],
+  MAID:[
+    {t:'严寒值夜',x:'寒冬腊月仍需值夜，冷风透骨，你险些染上重病。',e:{constitution:-9,diligence:6}},
+    {t:'姑姑责罚',x:'一处差事出了纰漏，管事姑姑当众训斥，你心中委屈。',e:{constitution:-5,diligence:-6,wit:2}},
+    {t:'同屋接济',x:'同屋姐妹见你手头拮据，悄悄塞给你几吊钱。',e:{silver:12,social:2}},
+    {t:'浣衣寒水',x:'一月浆洗不断，双手冻得开裂，你咬牙忍了过去。',e:{constitution:-7,diligence:8}},
+  ],
+  OFFICIAL:[
+    {t:'案牍劳形',x:'连日誊录公文，你伏案至深夜，颈肩酸痛，精神不济。',e:{constitution:-7,merit:6}},
+    {t:'上司嘉许',x:'你经手的文书无一差错，上司在众人面前夸赞了你。',e:{merit:8,reputation:5}},
+    {t:'朝堂风波',x:'朝中有人借题发挥，你职司相关，被卷入一场口舌之争。',e:{reputation:-6,wit:3}},
+    {t:'同僚借势',x:'一位同僚想借你的手攀附权贵，被你婉言谢绝，对方怀恨在心。',e:{reputation:-4,social:-2}},
+  ],
+};
+/* 赐死危机：条件成立时，每月有小概率取代普通突发剧情 */
+const EXECUTION_EVENT={
+  t:'御前赐死',
+  x:'御前失仪，皇后趁机进言，帝王震怒。一纸赐死诏书落下，你被押往冷宫，等候天明。',
+  e:{prestige:-20,favor:-20},
+  cond:g=>{
+    const c=g.c;
+    if(c.route==='CONSORT'){
+      const emp=g.consorts.cnp_empress||0;
+      return (emp<=25&&c.favor<=15)||(c.prestige>=230&&c.favor<40);
+    }
+    if(c.route==='OFFICIAL')return c.reputation>=160&&c.merit>=360;
+    return false;
+  },
+};
+const DEATH_ENDINGS={
+  illness:{title:'香 消 玉 殒',sub:'体质耗尽 · 病故',
+    text:'寒夜孤灯，你病骨支离，终于阖上了眼。深宫路远，终究没能走到尽头——这具身子，撑不住满宫的算计。'},
+  execution:{title:'赐 死 诏 下',sub:'触怒天颜 · 赐死',
+    text:'一纸赐死诏书落下，你被押往冷宫。窗外风声呜咽，你想起入宫那日的春光：原来深宫的尽头，从来不在凤座之上。'},
+};
+
+/* 差事配置（对齐 DutyConfig，简化保留核心） */
+const DUTIES = {
+  MAID:[
+    {id:'duty_laundry',name:'浣衣当值',cost:1,diff:.15,rw:{silver:8,diligence:12,constitution:2}},
+    {id:'duty_bureau_daily',name:'六局值夜',cost:1,diff:.25,rw:{silver:12,diligence:16,wit:2},rank:1},
+    {id:'duty_herb_gather',name:'太医院采药',cost:1,diff:.35,rw:{silver:15,diligence:20,constitution:3},rank:2},
+    {id:'duty_promote_guan_shi',name:'晋位考校·管事',cost:1,diff:.45,rw:{diligence:30,silver:20},promote:'PU_TONG',rank:1},
+    {id:'duty_promote_zhang_shi',name:'晋位考校·掌事',cost:1,diff:.55,rw:{diligence:40,silver:30},promote:'GUAN_SHI',rank:2},
+  ],
+  OFFICIAL:[
+    {id:'duty_memorial',name:'誊录奏章',cost:1,diff:.2,rw:{silver:15,merit:12,reputation:4,talent:2}},
+    {id:'duty_bureau_affairs',name:'本局日常公务',cost:1,diff:.25,rw:{silver:18,merit:14,reputation:5}},
+    {id:'duty_bureau_special',name:'六局专项核账',cost:1,diff:.4,rw:{silver:25,merit:22,reputation:8,wit:3},rank:2},
+    {id:'duty_promote_zhang_shi',name:'晋阶考课·掌事',cost:1,diff:.45,rw:{merit:28,reputation:12,silver:24},promote:'ZHANG_SHI',rank:0},
+    {id:'duty_promote_dian_shi',name:'晋阶考课·典事',cost:1,diff:.5,rw:{merit:35,reputation:15,silver:30},promote:'DIAN_SHI',rank:1},
+    {id:'duty_promote_si_zuo',name:'晋阶考课·司佐',cost:1,diff:.55,rw:{merit:40,reputation:18,silver:36},promote:'SI_ZUO',rank:2},
+    {id:'duty_promote_si_shi',name:'晋阶考课·司事',cost:1,diff:.6,rw:{merit:45,reputation:20,silver:40},promote:'SI_SHI',rank:3},
+    {id:'duty_promote_si_zheng',name:'晋阶考课·司正',cost:1,diff:.65,rw:{merit:50,reputation:24,silver:46},promote:'SI_ZHENG',rank:4},
+    {id:'duty_promote_ju_cheng',name:'晋阶考课·局丞',cost:1,diff:.7,rw:{merit:56,reputation:28,silver:54},promote:'JU_CHENG',rank:5},
+    {id:'duty_promote_ju_zuo',name:'晋阶考课·局佐',cost:1,diff:.75,rw:{merit:62,reputation:32,silver:62},promote:'JU_ZUO',rank:6},
+    {id:'duty_promote_shang_shu',name:'晋阶考课·尚属',cost:1,diff:.8,rw:{merit:70,reputation:36,silver:72},promote:'SHANG_SHU',rank:7},
+    {id:'duty_promote_shang_gong',name:'晋阶考课·尚宫',cost:1,diff:.85,rw:{merit:80,reputation:42,silver:84},promote:'SHANG_GONG',rank:8},
+  ],
+  CONSORT:[
+    {id:'duty_tribute',name:'料理宫宴',cost:1,diff:.25,rw:{silver:20,prestige:10,social:3}},
+    {id:'duty_palace_etiquette',name:'宫廷礼仪应对',cost:1,diff:.35,rw:{silver:25,prestige:15,favor:3,wit:3},rank:2},
+    {id:'duty_promote_pin',name:'晋位差事·嫔',cost:1,diff:.55,rw:{prestige:40,favor:5,silver:50},promote:'PIN',rank:3},
+  ],
+};
+
+/* ---------- 3. 状态 & 存档 ---------- */
+const SAVE_KEY='shen_gong_lu_h5_v1';
+const SLOT_KEY=n=>'shen_gong_lu_h5_slot_'+n;
+const AUTO_KEY='shen_gong_lu_h5_auto';
+let S={screen:'title',draft:null,game:null,modal:null,toastTimer:null,flow:null,pendingFlows:[]};
+
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function rollFamily(){let t=CFG.family.reduce((s,f)=>s+CFG.familyInfo[f].w,0),r=Math.random()*t;
+  for(const f of CFG.family){r-=CFG.familyInfo[f].w;if(r<=0)return f}return 'COMMONER'}
+function rollOrigin(fam){
+  const fi=CFG.familyInfo[fam],t=pick(fi.titles);
+  return {rank:t[0],office:t[1],kin:pick(fi.kin)};
+}
+function familyDesc(d){
+  const o=d.origin||rollOrigin(d.family);
+  return '你是「'+o.rank+o.office+'」的'+o.kin;
+}
+/* 秀女入宫位份：家世定基础，嫡女高一级，上限贵人 */
+function startRankFor(d){
+  const m=CFG.startRank[d.family]||CFG.startRank.COMMONER;
+  return (d.origin&&d.origin.kin==='嫡女'&&m.elite)?m.elite:m.base;
+}
+function draftStartLabel(d){
+  if(S.createRoute==='CONSORT'){
+    const r=CFG.ranks.CONSORT.find(x=>x[0]===startRankFor(d));
+    return r?r[1]:'官女子';
+  }
+  return S.createRoute==='MAID'?'粗使宫女':'女史';
+}
+function newDraft(){
+  const fam=rollFamily(),fi=CFG.familyInfo[fam];const attrs={};
+  for(const k in fi.r)attrs[k]=rnd(fi.r[k][0],fi.r[k][1]);
+  return {name:'',age:rnd(CFG.startAge.min,CFG.startAge.max),family:fam,origin:rollOrigin(fam),attributes:attrs,
+    silver:fi.silver,freeFamily:3,freeAttr:3,adFamily:0,adAttr:0};
+}
+/* 家世刷新：只换家世、出身文案与初始银两，不动属性 */
+function rerollFamily(d){
+  const fam=rollFamily(),fi=CFG.familyInfo[fam];
+  d.family=fam;d.origin=rollOrigin(fam);d.silver=fi.silver;d.age=rnd(CFG.startAge.min,CFG.startAge.max);
+}
+/* 属性刷新：在当前家世范围内重掷五维，不动家世 */
+function rerollAttr(d){
+  const fi=CFG.familyInfo[d.family];
+  for(const k in fi.r)d.attributes[k]=rnd(fi.r[k][0],fi.r[k][1]);
+}
+function validateName(n){
+  n=(n||'').trim();
+  if(n.length<CFG.nameMin||n.length>CFG.nameMax)return {ok:false,reason:'姓名需 '+CFG.nameMin+'~'+CFG.nameMax+' 字'};
+  if(!/^[\u4e00-\u9fa5·]+$/.test(n))return {ok:false,reason:'仅允许汉字与间隔号·'};
+  if(CFG.sensitive.some(w=>n.includes(w)))return {ok:false,reason:'含有不雅或禁用字词'};
+  return {ok:true};
+}
+
+/* 构建存档 */
+function buildGame(draft,route,bureau){
+  const g={
+    v:1,
+    c:{name:draft.name||'无名氏', age:draft.age,
+      family:draft.family,origin:draft.origin||rollOrigin(draft.family),attributes:{...draft.attributes},silver:draft.silver,route,bureau,
+      rank:route==='CONSORT'?startRankFor(draft):route==='MAID'?'CU_SHI':'NV_SHI',
+      favor:0,prestige:0,diligence:0,merit:0,reputation:0,
+      married:false,husband:null,debuffs:[],servants:[]},
+    time:{year:1,month:1,ap:CFG.actionMax},
+    ministers:{}, consorts:{},
+    inventory:{},children:[],dutyCompleted:[],
+    pregnant:null,
+    log:[],
+  };
+  // 对齐兜底名
+  g.c.name=validateName(draft.name).ok?draft.name:'无名氏';
+  // 初始化NPC好感
+  CFG.ministers.forEach(m=>g.ministers[m[0]]=0);
+  CFG.consorts.forEach(c=>g.consorts[c[0]]=c[0]==='cnp_dowager'?30:20);
+  CFG.servantTpl[route].forEach(t=>g.c.servants.push({id:t[0],name:t[1],desc:t[2],loyalty:70,ability:20}));
+  addLog(g,'出身'+CFG.familyInfo[draft.family].name+'，'+familyDesc(draft)+'，入宫授「'+CFG.ranks[route].find(r=>r[0]===g.c.rank)[1]+'」之位。');
+  return g;
+}
+function addLog(g,text){g.log.unshift({y:g.time.year,m:g.time.month,t:text});if(g.log.length>40)g.log.pop()}
+
+/* 存档读写 */
+function saveToSlot(n){
+  if(!S.game)return;
+  localStorage.setItem(SLOT_KEY(n),JSON.stringify({ts:Date.now(),data:S.game}));
+  localStorage.setItem(AUTO_KEY,JSON.stringify({ts:Date.now(),data:S.game}));
+  toast('已保存至存档槽 '+n);
+}
+function autoSave(){if(S.game)localStorage.setItem(AUTO_KEY,JSON.stringify({ts:Date.now(),data:S.game}))}
+/* 存档兼容：老档补齐新增字段 */
+function migrate(g){
+  if(!g||!g.c)return g;
+  const c=g.c;
+  if(!Array.isArray(c.servants))c.servants=Array.isArray(g.servants)?g.servants:[];
+  if(!Array.isArray(g.children))g.children=[];
+  if(!Array.isArray(g.dutyCompleted))g.dutyCompleted=[];
+  if(!g.inventory)g.inventory={};
+  if(g.pregnant===undefined)g.pregnant=null;
+  if(typeof c.married!=='boolean')c.married=false;
+  if(!c.husband)c.husband=null;
+  if(!c.debuffs)c.debuffs=[];
+  if(!c.origin)c.origin=rollOrigin(c.family||'COMMONER');
+  if(!g.consorts)g.consorts={};
+  if(g.consorts.cnp_dowager===undefined)g.consorts.cnp_dowager=30;
+  if(!g.lastJingren)g.lastJingren=null;
+  if(!g.ending)g.ending=null;
+  if(!g.log)g.log=[];
+  return g;
+}
+function loadSlot(n){try{const raw=localStorage.getItem(SLOT_KEY(n));return raw?migrate(JSON.parse(raw)):null}catch(e){return null}}
+function loadAuto(){try{const raw=localStorage.getItem(AUTO_KEY);return raw?migrate(JSON.parse(raw)):null}catch(e){return null}}
+function hasAnySave(){for(let i=1;i<=3;i++)if(loadSlot(i))return true;return !!loadAuto()}
+function latestSave(){
+  let best=null;for(let i=1;i<=3;i++){const s=loadSlot(i);if(s&&(!best||s.ts>best.ts))best={...s,slot:i}}
+  const a=loadAuto();if(a&&(!best||a.ts>best.ts))best={...a,slot:'auto'};return best;
+}
+
+/* ---------- 4. 通用工具 ---------- */
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(e=>e.remove());
+  const d=document.createElement('div');d.className='toast';d.textContent=msg;
+  document.getElementById('app').appendChild(d);
+  clearTimeout(S.toastTimer);S.toastTimer=setTimeout(()=>d.remove(),1900);
+}
+function rankName(){const c=S.game.c;return CFG.ranks[c.route].find(r=>r[0]===c.rank)[1]}
+function rankIdx(){const c=S.game.c;return CFG.ranks[c.route].findIndex(r=>r[0]===c.rank)}
+function salary(){const c=S.game.c;return CFG.salary[c.route][rankIdx()]||0}
+/* 晋升攻略：返回当前路线下一级的达成条件与进度 */
+function promoteReq(){
+  const c=S.game.c,rs=CFG.ranks[c.route],ri=rankIdx();
+  if(ri>=rs.length-1)return {max:true};
+  const n=rs[ri+1],r={name:n[1],need:'',cur:'',progress:0,parts:[]};
+  if(c.route==='CONSORT'){
+    const raw=n[2]||0,relief=Math.min(c.favor*0.5,raw*0.7),need=Math.max(raw*0.3,raw-relief),fav=n[3]||0;
+    r.parts=[{k:'威望',cur:c.prestige,need:Math.ceil(need)},{k:'帝宠',cur:c.favor,need:fav}];
+  } else if(c.route==='MAID'){
+    r.parts=[{k:'勤谨',cur:c.diligence,need:n[2]}];
+  } else {
+    r.parts=[{k:'功勋',cur:c.merit,need:n[2]},{k:'声望',cur:c.reputation,need:n[3]}];
+  }
+  r.need=r.parts.map(p=>p.k+'≥'+p.need).join(' 且 ');
+  r.cur=r.parts.map(p=>p.k+' '+p.cur+'/'+p.need).join(' · ');
+  const ratio=r.parts.reduce((a,p)=>a+Math.min(1,p.cur/p.need),0)/r.parts.length;
+  r.progress=Math.round(ratio*100);
+  r.ok=r.parts.every(p=>p.cur>=p.need);
+  return r;
+}
+function favorStage(v){for(const [n,l] of CFG.favorStage)if(v>=n)return l;return '陌生'}
+function affStage(v){for(const [n,l] of CFG.stages)if(v>=n)return l;return '陌生'}
+function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+
+/* 数值结算（扣AP、跨月、自动俸禄、每月剧情、死亡判定） */
+function spendAP(n){
+  if(S.game.ending)return;
+  S.game.time.ap=Math.max(0,S.game.time.ap-n);
+}
+/* 手动进入下一月：结算俸禄 + 随机事件，由玩家主动触发 */
+function advanceMonth(){
+  if(S.game.ending)return;
+  if(S.modal||S.flow){toast('请先结束当前事件');return}
+  const r=nextMonth();
+  render();
+  if(r!=='death')toast('进入第 '+S.game.time.year+' 年 · 第 '+S.game.time.month+' 月');
+}
+/* 死亡结局 */
+function setEnding(type){
+  const g=S.game;
+  g.ending={type};
+  S.pendingFlows=[];S.flow=null;S.modal=null;S.screen='ending';
+  addLog(g,DEATH_ENDINGS[type].sub+'，故事落幕。');
+  toast(DEATH_ENDINGS[type].title);
+  autoSave();render();
+}
+function checkDeath(){
+  if(S.game.ending)return true;
+  if(S.game.c.attributes.constitution<=0){setEnding('illness');return true}
+  return false;
+}
+function revive(){
+  const g=S.game,type=g.ending&&g.ending.type,c=g.c;
+  if(!type)return;
+  if(type==='illness'){
+    c.attributes.constitution=30;
+    addLog(g,'命悬一线之际，幸得神医相救，体质渐复。');
+  }else{
+    c.attributes.constitution=Math.max(20,c.attributes.constitution);
+    c.prestige=Math.max(0,c.prestige-20);
+    c.silver=Math.max(0,c.silver-30);
+    addLog(g,'贵人求情，赐死改为幽禁，保全性命（威望-20、银两-30）。');
+  }
+  g.ending=null;S.screen='main';S.modal=null;S.flow=null;S.pendingFlows=[];
+  autoSave();render();toast('[原型] 广告已看完，死里逃生');
+}
+function restartGame(){
+  S.screen='title';S.game=null;S.modal=null;S.flow=null;S.pendingFlows=[];render();
+}
+function nextMonth(){
+  const t=S.game.time;
+  t.ap=CFG.actionMax;t.month++;
+  let yearEnd=false;
+  if(t.month>CFG.monthsPerYear){
+    t.month=1;t.year++;yearEnd=true;
+    S.game.c.silver+=CFG.annualSilverBonus;
+    for(const k in S.game.c.attributes)S.game.c.attributes[k]=Math.min(100,S.game.c.attributes[k]+rnd(1,3));
+    addLog(S.game,'岁末年初，朝廷例赏银 '+CFG.annualSilverBonus+' 两，全属性略有精进。');
+  }
+  // 俸禄每月自动发放，无需再去库房领取
+  let pay=salary();
+  if(S.game.c.married){pay+=12;addLog(S.game,'夫君接济，另有银两 12 两。');}
+  S.game.c.silver+=pay;
+  addLog(S.game,'新的一月，自动领俸禄 '+pay+' 两。');
+  // 怀孕推进
+  if(S.game.pregnant){
+    S.game.pregnant.months--;
+    if(S.game.pregnant.months<=0){
+      const gender=Math.random()<0.5?'男':'女';
+      const name=pick(['昭','宁','安','瑞','祥','宜'])+gender;
+      S.game.children.push({name,gender,age:0});
+      addLog(S.game,'诞下'+gender+'婴，取名「'+name+'」。');
+      S.game.pregnant=null;
+      S.pendingFlows.push({stage:'result',title:'喜得子嗣',
+        resultText:'十月怀胎，一朝分娩，'+gender+'婴呱呱坠地，取名「'+name+'」。',
+        deltas:[{t:'子嗣 +1 · '+name,pos:true,k:'aff'}],promoted:null,yearEnd:false});
+    }
+  }
+  // 每月开头自动触发宫廷突发剧情
+  let ev=pick(MONTHLY_EVENTS[S.game.c.route]||[]);
+  if(Math.random()<0.4||!ev)ev=pick(MONTHLY_EVENTS.ALL);
+  if(EXECUTION_EVENT.cond(S.game)&&Math.random()<0.22)ev=EXECUTION_EVENT;
+  if(ev===EXECUTION_EVENT){setEnding('execution');return 'death'}
+  const deltas=applyEffects(ev.e||{},ev.a||{});
+  addLog(S.game,'【'+ev.t+'】'+ev.x);
+  if(checkDeath())return 'death';
+  S.pendingFlows.push({stage:'result',title:ev.t,
+    resultText:ev.x+'（本月自动剧情，属性已结清）',deltas,promoted:null,yearEnd});
+  autoSave();
+  return yearEnd?'yearEnd':'month';
+}
+function tryPromote(){
+  const c=S.game.c,ri=rankIdx(),rs=CFG.ranks[c.route];
+  if(ri>=rs.length-1)return null;
+  const next=rs[ri+1];
+  let ok=false;
+  if(c.route==='CONSORT'){
+    const relief=Math.min(c.favor*0.5, (next[2]||0)*0.7);
+    const need=Math.max((next[2]||0)*0.3,(next[2]||0)-relief);
+    ok=c.prestige>=need&&c.favor>=(next[3]||0);
+  } else if(c.route==='MAID') ok=c.diligence>=next[2];
+  else ok=c.merit>=next[2]&&c.reputation>=next[3];
+  if(ok){c.rank=next[0];addLog(S.game,'晋升为「'+next[1]+'」！');autoSave();return next[1]}
+  return null;
+}
+function npcName(id){
+  const isMin=id.startsWith('min');
+  const arr=isMin?CFG.ministers:CFG.consorts;
+  const f=arr.find(n=>n[0]===id);return f?f[1]:id;
+}
+function applyEffects(e,a){
+  const c=S.game.c,out=[];
+  const map={silver:'银两',prestige:'威望',favor:'帝宠',diligence:'勤谨',merit:'功勋',reputation:'声望'};
+  const attrName=CFG.attrName;
+  // 属性类 key 无论写在顶层还是 attributes 里，一律进属性面板并用中文显示
+  const addAttr=(k,v)=>{
+    if(!attrName[k])return false;
+    c.attributes[k]=Math.max(0,Math.min(100,(c.attributes[k]||0)+v));
+    out.push({t:attrName[k]+' '+(v>0?'+':'')+v,pos:v>0,k:'attr'});
+    return true;
+  };
+  for(const k in e){if(k==='attributes')continue;const v=e[k];if(!v)continue;
+    if(!addAttr(k,v)){
+      c[k]=Math.max(0,(c[k]||0)+v);
+      out.push({t:(map[k]||k)+' '+(v>0?'+':'')+v,pos:v>0,k:'res'});
+    }}
+  if(e.attributes)for(const k in e.attributes){const v=e.attributes[k];if(v)addAttr(k,v);}
+  if(a)for(const id in a){const v=a[id];if(!v)continue;
+    const store=id.startsWith('min')?S.game.ministers:S.game.consorts;
+    const cur=store[id]||0;store[id]=Math.max(0,Math.min(100,cur+v));
+    out.push({t:npcName(id)+'好感 '+(v>0?'+':'')+v,pos:v>0,k:'aff'});}
+  return out;
+}
+
+/* ---------- 5. 渲染框架 ---------- */
+const app=document.getElementById('app');
+function render(){
+  // 跨月产生的自动剧情排队，等当前弹窗关闭后依次弹出
+  if(S.screen==='main'&&!S.modal&&!S.flow&&S.pendingFlows&&S.pendingFlows.length){
+    S.flow=S.pendingFlows.shift();S.modal='event';
+  }
+  app.innerHTML=view();bind();
+}
+function view(){
+  switch(S.screen){
+    case 'title':return vTitle();
+    case 'route':return vRoute();
+    case 'create':return vCreate();
+    case 'main':return vMain()+ (S.modal?modalHTML():'');
+    case 'ending':return vEnding();
+  }
+  return '';
+}
+function bind(){
+  app.querySelectorAll('[data-a]').forEach(el=>el.addEventListener('click',e=>{
+    const a=el.dataset.a,p=el.dataset.p;
+    handle(a,p,e);
+  }));
+}
+
+/* 启动页 */
+function vTitle(){
+  const ls=latestSave();
+  return `<div class="screen">
+    <div class="splash">
+      <div class="seal">宫</div>
+      <h1>深宫录</h1><div class="en">THE PALACE CHRONICLE</div>
+      <div class="line"></div>
+      ${ls?`<button class="btn" data-a="continue">继续游戏 · ${ls.data.c.name}</button>
+            <button class="btn" data-a="toRoute">新开存档</button>`:
+           `<button class="btn primary" data-a="toRoute">入 宫</button>`}
+      <div class="foot">纯单机 · 文字养成 · 本地存档</div>
+    </div></div>`;
+}
+/* 路线选择 */
+function vRoute(){
+  const cards=Object.keys(CFG.routes).map(k=>{const r=CFG.routes[k];
+    return `<div class="card route-card rc-${r.color}" data-a="pickRoute" data-p="${k}">
+      <div class="rtop"><div class="ricon">${r.icon}</div><div>
+        <h3>${r.name}</h3><div class="rline">${r.intro}</div></div></div>
+      <div style="margin-top:8px"><span class="tag hot">${r.tag}</span></div>
+      <div class="hint" style="margin-top:8px"><b style="color:var(--ink2)">成长</b>：${r.growth}</div>
+      <ul>${r.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+      <div class="hint">🔓 ${r.unlock}</div></div>`;}).join('');
+  return `<div class="screen"><div class="scroll">
+    <div class="title" style="font-size:22px;margin:6px 0">择 路 入 宫</div>
+    <div class="sub">三条截然不同的深宫命途</div>
+    ${cards}
+    <button class="btn ghost" data-a="backTitle">返回</button>
+  </div></div>`;
+}
+/* 死亡结局 */
+function vEnding(){
+  const g=S.game,e=DEATH_ENDINGS[(g.ending&&g.ending.type)||'illness'],c=g.c;
+  return `<div class="screen"><div class="scroll ending-wrap">
+    <div class="ending-seal">终</div>
+    <div class="ending-title">${e.title}</div>
+    <div class="ending-sub">${e.sub}</div>
+    <div class="line" style="margin:18px auto;width:60%"></div>
+    <div class="story-text" style="margin-top:16px">${esc(e.text)}</div>
+    <div class="card" style="margin-top:18px">
+      <div class="kv"><span>姓名</span><b>${esc(c.name)}</b></div>
+      <div class="kv"><span>享年</span><b>${c.age} 岁</b></div>
+      <div class="kv"><span>身份</span><b>${CFG.familyInfo[c.family].name} · ${rankName()}</b></div>
+      <div class="kv"><span>香消于</span><b>第 ${g.time.year} 年 ${g.time.month} 月</b></div>
+    </div>
+    <div class="hint" style="margin-top:14px;text-align:center">若不愿就此落幕，可观一段激励广告，换一次死里逃生的机会。</div>
+    <button class="btn primary" style="margin-top:14px" data-a="revive">📺 看广告 · 死里逃生</button>
+    <button class="btn ghost" style="margin-top:8px" data-a="restartEnding">重新开始</button>
+  </div></div>`;
+}
+
+/* 自定义角色 */
+function vCreate(){
+  const d=S.draft,fi=CFG.familyInfo[d.family],route=CFG.routes[S.createRoute];
+  const attrs=Object.keys(CFG.attrName).map(k=>`<div class="stat">
+      <span>${CFG.attrName[k]}</span><span class="sv">${d.attributes[k]}</span>
+      <div class="bar"><i style="width:${d.attributes[k]}%"></i></div></div>`).join('');
+  const bureauSel=(S.createRoute!=='CONSORT')?`
+    <div class="sec-title">供职六局</div>
+    <div class="row" style="flex-wrap:wrap">
+    ${CFG.bureaus.map(b=>`<div style="width:48%;margin-bottom:6px">
+      <button class="btn sm ${S.createBureau===b[0]?'primary':''}" data-a="pickBureau" data-p="${b[0]}">${b[1]}</button></div>`).join('')}
+    </div>
+    <div class="hint">${CFG.bureaus.find(b=>b[0]===S.createBureau)?.[2]||'请选择供职机构'}</div>`:'';
+  return `<div class="screen"><div class="scroll">
+    <div class="title" style="font-size:22px">起 名 定 命</div>
+    <div class="sub">${route.name}</div>
+    <div class="sec-title">姓名</div>
+    <div class="card"><input id="nameInput" maxlength="${CFG.nameMax}" placeholder="请输入姓名（2~8字）"
+      value="${esc(d.name)}" style="width:100%;padding:12px;font-size:16px;border:1px solid var(--line);
+      border-radius:6px;background:var(--white);font-family:inherit;text-align:center;letter-spacing:2px">
+      <div class="hint" style="margin-top:8px;text-align:center">${CFG.nameConfigHint||'仅汉字，2~8字，勿用皇室用字'}</div></div>
+    <div class="sec-title">身世天成 <span class="tag">家世独立刷新</span></div>
+    <div class="card">
+      <div class="kv"><span>年龄</span><b>${d.age} 岁</b></div>
+      <div class="kv"><span>门第</span><b>${fi.name}</b></div>
+      <div class="kv"><span>出身</span><b style="font-size:13px">${esc(familyDesc(d))}</b></div>
+      <div class="kv"><span>${S.createRoute==='CONSORT'?'入宫位份':'入宫职级'}</span><b style="color:var(--red)">${draftStartLabel(d)}</b></div>
+      <div class="kv"><span>初始银两</span><b>${d.silver} 两</b></div>
+      <div class="hint" style="margin-top:8px">免费刷新剩 ${d.freeFamily} 次 · 已用广告 ${d.adFamily} 次</div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn sm" data-a="rfFamily" ${d.freeFamily<=0?'disabled':''}>🎲 免费刷家世(${d.freeFamily})</button>
+        <button class="btn sm ghost" data-a="raFamily">📺 看广告 +1 次</button>
+      </div>
+    </div>
+    <div class="sec-title">五大属性 <span class="tag">属性独立刷新</span></div>
+    <div class="stat-grid">${attrs}</div>
+    <div class="hint" style="margin-top:8px">免费刷新剩 ${d.freeAttr} 次 · 已用广告 ${d.adAttr} 次</div>
+    <div class="row" style="margin-top:8px">
+      <button class="btn sm" data-a="rfAttr" ${d.freeAttr<=0?'disabled':''}>🎲 免费刷属性(${d.freeAttr})</button>
+      <button class="btn sm ghost" data-a="raAttr">📺 看广告 +1 次</button>
+    </div>
+    ${bureauSel}
+    <button class="btn primary" style="margin-top:14px" data-a="confirmCreate">确 定 入 宫</button>
+    <button class="btn ghost sm" data-a="backRoute">返回改选路线</button>
+  </div></div>`;
+}
+
+/* 主界面 */
+function vMain(){
+  const c=S.game.c,t=S.game.time,r=CFG.routes[c.route];
+  const dots=Array.from({length:CFG.actionMax},(_,i)=>`<i class="${i<t.ap?'on':''}"></i>`).join('');
+  const navs=[
+    ['attr','👤','属性',true],
+    ['guide','📖','攻略',true],
+    ['npc', c.route==='OFFICIAL'?'🤝':'👒', c.route==='OFFICIAL'?'朝臣':'嫔妃',true],
+    ['duty','📋','差事',true],
+    ['shop','🏪','商店',true],
+    ['bag','🎒','背包',true],
+    ['servant','🧹','侍从',true],
+    ['child','👶','子嗣',c.route==='CONSORT'],
+    ['save','💾','存档',true],
+  ];
+  const navHTML=navs.filter(n=>n[3]).map(n=>`<div class="nav ${S.modal===n[0]?'active':''}" data-a="openPanel" data-p="${n[0]}">
+    <span class="ni">${n[1]}</span><span class="nl">${n[2]}</span></div>`).join('');
+  const map=CFG.locations.map(l=>{
+    const [id,name,icon,desc,allow,hs,x,y]=l;
+    let allowed=allow==='ALL'||
+      (allow==='CONSORT_OFFICIAL'&&(c.route==='CONSORT'||c.route==='OFFICIAL'))||
+      (allow==='MAID_OFFICIAL'&&(c.route==='MAID'||c.route==='OFFICIAL'))||
+      allow===c.route;
+    // 朝臣邂逅点仅女官典事以上解锁
+    let lockReason='';
+    if(hs&&c.route==='OFFICIAL'&&rankIdx()<2){allowed=false;lockReason='典事解锁'}
+    if(name==='储秀宫'&&c.route!=='CONSORT'){allowed=false}
+    const costsAP=id!=='jingRenGong'; // 景仁宫请安不消耗行动力
+    const apOut=S.game.time.ap<=0&&costsAP;
+    const usable=allowed&&!apOut;
+    const tip=!allowed?(lockReason||'当前身份不可进入'):(apOut?'行动力已耗尽，请点「进入下一月」':desc);
+    return `<button class="map-pin ${usable?'':'locked'}" style="left:${x}%;top:${y}%" title="${tip}"
+      ${usable?`data-a="enterLoc" data-p="${id}"`:''}>
+      <span class="pin-ico">${usable?icon:'🔒'}</span><span class="pin-name">${name}</span></button>`;
+  }).join('');
+  return `<div class="screen">
+    <div class="topbar">
+      <div class="tb-date">第<b>${t.year}</b>年 · <b>${t.month}</b>月<br>
+        <span class="route-badge">${r.name} · ${rankName()}</span></div>
+      <div class="tb-stats">
+        <span>💰<b>${c.silver}</b></span>
+        <span>⚡<span class="ap-dots">${dots}</span></span>
+        ${c.route==='CONSORT'?`<span>帝宠<b>${c.favor}</b></span><span>威望<b>${c.prestige}</b></span>`:''}
+        ${c.route==='MAID'?`<span>勤谨<b>${c.diligence}</b></span>`:''}
+        ${c.route==='OFFICIAL'?`<span>功勋<b>${c.merit}</b></span><span>声望<b>${c.reputation}</b></span>`:''}
+      </div>
+    </div>
+    <div class="mainmap">
+      <div class="maphead"><div class="mt">皇 宫 舆 图</div>
+        <div class="md">点击图上地点行动 · 每次消耗 1 点行动力 · 用尽后手动进入下一月</div></div>
+      <div class="map-canvas"><img src="palace-map.jpg" alt="皇宫舆图">${map}</div>
+      <div class="hint" style="margin-top:8px">📍 图上标记处即可前往；灰色为你当前不可进入之地。</div>
+      <button class="btn next-month ${t.ap<=0?'urgent':''}" data-a="nextMonth">📅 进入下一月${t.ap<=0?' · 行动力已耗尽':''}</button>
+      ${c.route==='MAID'&&c.rank==='ZHANG_SHI'?`<button class="btn primary" style="margin-top:14px" data-a="openPanel" data-p="transit">⚖️ 掌事姑姑 · 人生抉择</button>`:''}
+      <div class="foot-note">深宫录 · 试玩原型 V4<br>俸禄月结自动发放 · 行动力用尽后手动进入下一月</div>
+    </div>
+    <div class="navbar">${navHTML}</div>
+  </div>`;
+}
+
+/* 弹窗 */
+function modalHTML(){
+  const m=S.modal;
+  let head='',body='',foot='';
+  if(m==='attr'){
+    head='人物属性';
+    const c=S.game.c;
+    const attrs=Object.keys(CFG.attrName).map(k=>`<div class="stat">
+      <span>${CFG.attrName[k]}</span><span class="sv">${c.attributes[k]}</span>
+      <div class="bar"><i style="width:${c.attributes[k]}%"></i></div></div>`).join('');
+    body=`<div class="card"><div style="text-align:center;margin-bottom:10px">
+        <div style="font-size:20px;color:var(--red);letter-spacing:2px">${c.name}</div>
+        <div class="hint">${c.age}岁 · ${CFG.familyInfo[c.family].name} · ${rankName()}</div>
+        ${c.route==='CONSORT'?`<div class="hint">帝宠阶段：${favorStage(c.favor)}（${c.favor}）｜威望 ${c.prestige}</div>`:''}
+        ${c.route==='MAID'?`<div class="hint">供职：${CFG.bureaus.find(b=>b[0]===c.bureau)?.[1]}｜勤谨 ${c.diligence}</div>`:''}
+        ${c.route==='OFFICIAL'?`<div class="hint">供职：${CFG.bureaus.find(b=>b[0]===c.bureau)?.[1]}｜功勋 ${c.merit}｜声望 ${c.reputation}</div>`:''}
+        ${c.married?`<div class="hint">💍 夫君：${esc(c.husband||'—')}（每月银两加成）</div>`:''}
+        ${S.game.pregnant?`<div class="hint">🤰 已有身孕 · 还需 ${S.game.pregnant.months} 月临盆</div>`:''}
+        <div class="hint">侍从 ${(c.servants||[]).length} 名</div>
+      </div><div class="stat-grid">${attrs}</div></div>
+      <div class="card"><div class="sec-title" style="margin-top:0">履历</div>
+        ${S.game.log.slice(0,8).map(l=>`<div class="hint" style="padding:3px 0">[${l.y}年${l.m}月] ${esc(l.t)}</div>`).join('')||'<div class="hint">暂无</div>'}
+      </div>`;
+  } else if(m==='duty'){
+    head='差事任务';
+    const list=DUTIES[S.game.c.route].filter(d=>d.rank===undefined||rankIdx()>=d.rank);
+    body=`<div class="hint" style="margin-bottom:8px">接取差事需 1 点行动力，完成后按难度判定成败。</div>`+
+      list.map(d=>`<div class="card" style="padding:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <b style="font-size:14px">${d.name}${d.promote?' <span class="tag hot">晋升</span>':''}</b>
+          <button class="btn sm primary" style="width:auto;margin:0;padding:6px 14px" data-a="doDuty" data-p="${d.id}" ${S.game.time.ap<=0?'disabled':''}>办理</button></div>
+        <div class="hint" style="margin-top:4px">难度 ${Math.round(d.diff*100)}% · 耗AP ${d.cost}</div></div>`).join('');
+  } else if(m==='npc'){
+    const isOff=S.game.c.route==='OFFICIAL';
+    head=isOff?'朝臣':'嫔妃';
+    const unlocked=!isOff||rankIdx()>=2;
+    if(!unlocked){body=`<div class="empty-tip">🔒<br>朝臣邂逅需职级达「典事」后开放<br>当前：${rankName()}</div>`;}
+    else{
+      const src=isOff?CFG.ministers:CFG.consorts;
+      const aff=isOff?S.game.ministers:S.game.consorts;
+      body=`<div class="hint" style="margin-bottom:8px">${isOff?'与朝臣交好，满 96 可求娶。':'拜访嫔妃、交好拉拢，好感有助于后宫争宠。'}<br>拜会 +3 / 交好 +9（各耗 1 行动力）；送礼消耗背包礼物。</div>`+
+        src.map((n,i)=>{const v=aff[n[0]]||0;
+          const canMarry=isOff&&v>=96&&!S.game.c.married;
+          return `<div class="npc"><div class="face">${isOff?n[2]:'妃'}</div>
+            <div class="info"><div class="nn">${n[1]}</div>
+            <div class="nr">${isOff?n[3]+' · '+n[4]:n[2]+' · '+n[3]}</div>
+            <div class="affbar"><i style="width:${v}%"></i></div>
+            <div class="stage">好感 ${v} · ${affStage(v)}${canMarry?' · 可求娶':''}</div></div>
+            <div class="npc-actions">
+              <button class="btn sm jade" data-a="npcAct" data-p="${n[0]}|GREET" ${S.game.time.ap<=0?'disabled':''}>拜会</button>
+              <button class="btn sm" data-a="npcAct" data-p="${n[0]}|HEART" ${S.game.time.ap<=0?'disabled':''}>交好</button>
+              <button class="btn sm" data-a="openGift" data-p="${n[0]}">送礼</button>
+              ${canMarry?`<button class="btn sm primary" data-a="propose" data-p="${n[0]}">求娶</button>`:''}
+            </div></div>`;
+        }).join('');
+    }
+  } else if(m==='bag'){
+    head='随身行囊';
+    const inv=S.game.inventory;const keys=Object.keys(inv);
+    body=keys.length?keys.map(k=>`<div class="kv"><span>${esc(k)}</span><b>×${inv[k]}</b></div>`).join(''):
+      `<div class="empty-tip">行囊空空<br><span class="hint">通过事件与差事可获得物品</span></div>`;
+  } else if(m==='child'){
+    head='子嗣';
+    const kids=S.game.children;
+    body=kids.length?kids.map(k=>`<div class="card">${k.name} · ${k.gender} · ${k.age}岁</div>`).join(''):
+      `<div class="empty-tip">暂无子嗣<br><span class="hint">位分达「贵人」后可诞育子嗣</span></div>`;
+  } else if(m==='guide'){
+    head='晋升攻略';
+    const c=S.game.c,req=promoteReq(),rs=CFG.ranks[c.route],ri=rankIdx();
+    const rows=rs.map((r,i)=>{
+      let need,cur,ok,ratio;
+      if(i===0){need='起始';cur='';ok=true;ratio=100;}
+      else if(c.route==='CONSORT'){
+        const raw=r[2]||0,relief=Math.min(c.favor*0.5,raw*0.7),nd=Math.max(raw*0.3,raw-relief),fv=r[3]||0;
+        need='威望≥'+Math.ceil(nd)+' 且 帝宠≥'+fv;
+        cur='威望'+c.prestige+' · 帝宠'+c.favor;
+        ok=c.prestige>=Math.ceil(nd)&&c.favor>=fv;
+        ratio=Math.round(((Math.min(1,c.prestige/nd)+Math.min(1,c.favor/fv))/2)*100);
+      } else if(c.route==='MAID'){
+        need='勤谨≥'+r[2];cur='勤谨'+c.diligence;ok=c.diligence>=r[2];
+        ratio=Math.round(Math.min(1,c.diligence/r[2])*100);
+      } else {
+        need='功勋≥'+r[2]+' 且 声望≥'+r[3];cur='功勋'+c.merit+' · 声望'+c.reputation;
+        ok=c.merit>=r[2]&&c.reputation>=r[3];
+        ratio=Math.round(((Math.min(1,c.merit/r[2])+Math.min(1,c.reputation/r[3]))/2)*100);
+      }
+      const cls=i<ri?'done':i===ri?'now':ok?'ready':'';
+      const status=i<ri?'已历':i===ri?'当前':ok?'可晋升':ratio+'%';
+      return `<div class="guide-row ${cls}">
+        <div class="gi">${i<ri?'✓':(i+1)}</div>
+        <div class="gn"><b>${r[1]}</b>${i>0?`<div class="gc">${need}</div>`:''}
+          ${i<ri?'':`<div class="gc">${cur}</div>`}</div>
+        <div class="gs">${status}</div></div>`;
+    }).join('');
+    const nextBox=req.max?`<div class="year-end"><h3>已至顶峰</h3><div class="hint">${rs[rs.length-1][1]}乃本线极致</div></div>`:
+      `<div class="card" style="border-color:var(--red)">
+        <div class="sec-title" style="margin-top:0">下一级：${req.name} <span class="sec-badge">${req.ok?'条件已达':'进行中'}</span></div>
+        <div class="hint">需 ${esc(req.need)}</div>
+        <div class="bar" style="height:8px;margin-top:8px"><i style="width:${req.progress}%"></i></div>
+        <div class="hint" style="text-align:center;margin-top:5px">当前进度 ${req.progress}% · ${esc(req.cur)}</div>
+        <div class="hint" style="margin-top:8px;color:var(--ink2)">💡 ${CFG.guideNote[c.route]}</div>
+       </div>`;
+    const srcBox=`<div class="card"><div class="sec-title" style="margin-top:0">数值从何而来</div>
+      ${CFG.sourceTip.filter(t=>c.route==='CONSORT'?['prestige','favor'].includes(t[0]):c.route==='MAID'?t[0]==='diligence':['merit','reputation'].includes(t[0]))
+        .map(t=>`<div class="kv"><span>${t[1]}</span><span class="hint">${t[2]}</span></div>`).join('')}</div>`;
+    const ruleBox=`<div class="card"><div class="sec-title" style="margin-top:0">宫廷生存须知</div>
+      <div class="hint">· <b>俸禄</b>每月自动发放，无需前往库房，也不消耗行动力。</div>
+      <div class="hint">· 行动力用尽后，耗 AP 的地点与按钮会<b>锁定</b>；点「<b>进入下一月</b>」结算俸禄并触发一段<b>宫廷突发剧情</b>。</div>
+      <div class="hint">· <b>景仁宫</b>每月可向皇后请安一次（不耗行动力）；<b>慈宁宫</b>可与太后互动增长属性。</div>
+      <div class="hint">· <b>体质耗尽</b>会病故；<b>功高震主或失和于皇后</b>可能招致赐死。结局可看广告复活。</div>
+      <div class="hint">· 开局家世与属性<b>各自独立刷新</b>，各免费三次，之后可看广告换取机会。</div>
+      </div>`;
+    body=nextBox+`<div class="card"><div class="sec-title" style="margin-top:0">${CFG.routes[c.route].name} · 晋升阶梯</div>${rows}</div>`+srcBox+ruleBox;
+  } else if(m==='servant'){
+    head='侍从';
+    const sv=S.game.c.servants||[];
+    body=`<div class="hint" style="margin-bottom:8px">侍从忠心低于 30 可能离你而去；赏赐可提升忠心，历练可增长才干。</div>`+
+      sv.map((v,i)=>`<div class="servant"><div>
+        <b style="font-size:13px">${esc(v.name)}</b> <span class="tag">${esc(v.desc)}</span>
+        <div class="hint" style="margin-top:4px">忠心 ${v.loyalty} · 才干 ${v.ability}</div>
+        <div class="bar" style="width:120px"><i style="width:${v.loyalty}%"></i></div></div>
+        <div class="npc-actions">
+          <button class="btn sm" data-a="rewardServant" data-p="${i}">赏赐</button>
+          <button class="btn sm jade" data-a="trainServant" data-p="${i}" ${S.game.time.ap<=0?'disabled':''}>历练</button>
+        </div></div>`).join('');
+  } else if(m==='shop'){
+    head='商店';
+    body=`<div class="hint" style="margin-bottom:8px">现有银两 <b style="color:var(--red)">${S.game.c.silver}</b> 两 · 购得礼物可在「${S.game.c.route==='OFFICIAL'?'朝臣':'嫔妃'}」面板赠送</div>`+
+      CFG.shop.map(t=>`<div class="shop-item"><div>
+        <b style="font-size:13px">${t[1]}</b> <span class="tag">${t[5]}</span>
+        <div class="hint" style="margin-top:3px">售价 ${t[2]} 两</div></div>
+        <button class="btn sm primary" data-a="buyItem" data-p="${t[0]}">购买</button></div>`).join('');
+  } else if(m==='gift'){
+    head='赠送礼物 · '+npcName(S_giftTarget);
+    const gifts=Object.keys(S.game.inventory).filter(k=>CFG.shop.find(t=>(t[0]===k||t[1]===k)&&t[3]==='gift')&&S.game.inventory[k]>0);
+    body=`<div class="hint" style="margin-bottom:10px">选择一件礼物赠予 ${npcName(S_giftTarget)}，好感将提升。</div>`+
+      gifts.map(g=>{const t=CFG.shop.find(x=>(x[0]===g||x[1]===g));
+        return `<button class="btn" data-a="giftTo" data-p="${g}">${t[1]} ×${S.game.inventory[g]} · 好感+${t[4]}</button>`;
+      }).join('')+`<button class="btn ghost sm" data-a="closeModal">取消</button>`;
+  } else if(m==='transit'){
+    head='掌事姑姑 · 人生抉择';
+    body=`<div class="story-text">你已升至掌事姑姑，站在人生的岔路口。一条路是承宠进封，入妃嫔之列；一条路是考选及第，转入女官。此抉择不可回头。</div>
+      <button class="btn primary" data-a="transit" data-p="consort">🌸 承宠进封 · 转妃嫔（答应变）</button>
+      <button class="btn blue" data-a="transit" data-p="official">📜 考选及第 · 转女官（典事起）</button>
+      <button class="btn ghost sm" data-a="closeModal">再想想</button>`;
+  } else if(m==='save'){
+    head='存档 / 读档';
+    let slots='';
+    for(let i=1;i<=3;i++){const s=loadSlot(i);
+      slots+=`<div class="slot"><div class="si">${s?
+        `<b>存档槽 ${i}</b><br>${esc(s.data.c.name)} · ${CFG.routes[s.data.c.route].name}<br>
+         <span class="hint">第${s.data.time.year}年${s.data.time.month}月 · ${new Date(s.ts).toLocaleString('zh-CN')}</span>`:
+        `<b>存档槽 ${i}</b><br><span class="empty">— 空 —</span>`}</div>
+        <div><button class="btn sm" data-a="saveSlot" data-p="${i}">保存</button>
+        ${s?`<button class="btn sm ghost" data-a="loadSlot" data-p="${i}">读取</button>`:''}</div></div>`;}
+    body=slots+`<div class="hint" style="text-align:center;margin-top:8px">每次行动自动保存至自动存档</div>`;
+  } else if(m==='event'){
+    const f=S.flow;
+    head=f.title;
+    if(f.stage==='event'){
+      body=`<div class="story-text">${esc(f.event.x)}</div>
+        <div class="choices">${f.event.c.map((ch,i)=>`<button class="btn ${i===0?'primary':''}" data-a="choose" data-p="${i}">${ch.l}</button>`).join('')}</div>`;
+    } else if(f.stage==='result'){
+      const promoteLine=f.promoted?`<div class="year-end"><h3>晋 升</h3><div>恭喜晋升为「${f.promoted}」！</div></div>`:'';
+      const ye=f.yearEnd?`<div class="year-end"><h3>岁 末 结 算</h3>
+        <div class="hint">新的一年，朝廷例赏银 ${CFG.annualSilverBonus} 两</div></div>`:'';
+      body=promoteLine+ye+`<div class="result-line">${esc(f.resultText)}</div>
+        ${f.deltas.length?`<div class="card delta-list">${f.deltas.map(d=>`<span class="delta-chip ${d.k} ${d.pos?'up':'down'}">${esc(d.t)}</span>`).join('')}</div>`:
+          `<div class="hint" style="text-align:center">此次无数值变化</div>`}
+        <button class="btn primary" data-a="closeFlow">继续</button>`;
+    }
+  }
+  return `<div class="mask"><div class="dialog">
+    <div class="dg-head"><h2>${head}</h2><span class="x" data-a="closeModal">×</span></div>
+    <div class="dg-body">${body}</div></div></div>`;
+}
+
+/* ---------- 6. 交互处理 ---------- */
+function handle(a,p,e){
+  const d=S.draft;
+  switch(a){
+    case 'toRoute':S.screen='route';render();break;
+    case 'backTitle':S.screen='title';render();break;
+    case 'continue':{const ls=latestSave();if(ls){S.game=ls.data;S.screen=ls.data.ending?'ending':'main';S.modal=null;S.flow=null;S.pendingFlows=[];toast('已读取存档')}render();break;}
+    case 'pickRoute':
+      S.createRoute=p;
+      S.createBureau=p==='CONSORT'?null:'SHANG_GONG';
+      S.draft=newDraft();S.screen='create';render();break;
+    case 'pickBureau':S.createBureau=p;render();break;
+    case 'backRoute':S.screen='route';render();break;
+    case 'rfFamily':
+      if(d.freeFamily>0){rerollFamily(d);d.freeFamily--;syncName();render();toast('家世已刷新')}
+      break;
+    case 'raFamily':
+      // 原型无广告SDK：模拟激励广告，仅换取一次刷新机会（不强制观看）
+      d.adFamily++;d.freeFamily++;syncName();render();toast('[原型] 看完广告，家世刷新机会 +1');
+      break;
+    case 'rfAttr':
+      if(d.freeAttr>0){rerollAttr(d);d.freeAttr--;syncName();render();toast('属性已刷新')}
+      break;
+    case 'raAttr':
+      d.adAttr++;d.freeAttr++;syncName();render();toast('[原型] 看完广告，属性刷新机会 +1');
+      break;
+    case 'confirmCreate':{
+      syncName();const v=validateName(S.draft.name);
+      if(!v.ok){toast(v.reason);return}
+      if(S.createRoute!=='CONSORT'&&!S.createBureau){toast('请选择供职六局');return}
+      S.game=buildGame(d,S.createRoute,S.createBureau);
+      saveToSlot(1);S.screen='main';S.modal=null;render();
+      toast('入宫成功，愿你步步为营');break;
+    }
+    case 'openPanel':S.modal=(S.modal===p?null:p);render();break;
+    case 'closeModal':S.modal=null;render();break;
+    case 'enterLoc':enterLocation(p);break;
+    case 'nextMonth':advanceMonth();break;
+    case 'choose':chooseOption(+p);break;
+    case 'closeFlow':S.modal=null;S.flow=null;render();break;
+    case 'revive':revive();break;
+    case 'restartEnding':restartGame();break;
+    case 'doDuty':doDuty(p);break;
+    case 'saveSlot':saveToSlot(+p);render();break;
+    case 'loadSlot':{const s=loadSlot(+p);if(s){S.game=s.data;S.screen=s.data.ending?'ending':'main';S.modal=null;S.flow=null;S.pendingFlows=[];render();toast('已读取存档槽 '+p)}break;}
+    case 'buyItem':buyItem(p);break;
+    case 'openGift':openGift(p);break;
+    case 'giftTo':giftTo(p);break;
+    case 'npcAct':{const parts=p.split('|');npcAct(parts[0],parts[1]);break;}
+    case 'propose':propose(p);break;
+    case 'rewardServant':rewardServant(+p);break;
+    case 'trainServant':trainServant(+p);break;
+    case 'transit':transit(p);break;
+  }
+}
+
+/* ===== 新增交互 ===== */
+function buyItem(id){
+  const t=CFG.shop.find(x=>x[0]===id);if(!t)return;
+  if(S.game.c.silver<t[2]){toast('银两不足');return}
+  S.game.c.silver-=t[2];
+  S.game.inventory[t[1]]=(S.game.inventory[t[1]]||0)+1;
+  addLog(S.game,'购得「'+t[1]+'」。');autoSave();render();toast('购得 '+t[1]);
+}
+/* 常驻 NPC 互动：拜会 / 交好，各耗 1 行动力 */
+function npcAct(npcId,mode){
+  const gain=CFG.interact[mode]||CFG.interact.GREET;
+  const store=npcId.startsWith('min')?S.game.ministers:S.game.consorts;
+  if((store[npcId]||0)>=100){toast('对方好感已满');return}
+  if(S.game.time.ap<1){toast('行动力不足');return}
+  spendAP(1);
+  store[npcId]=Math.min(100,(store[npcId]||0)+gain);
+  addLog(S.game,(mode==='GREET'?'拜会':'交好')+npcName(npcId)+'，好感 +'+gain);
+  autoSave();render();toast(npcName(npcId)+'好感 +'+gain);
+}
+let S_giftTarget=null;
+function openGift(npcId){
+  S_giftTarget=npcId;
+  const gifts=Object.keys(S.game.inventory).filter(k=>CFG.shop.find(t=>(t[0]===k||t[1]===k)&&t[3]==='gift')&&S.game.inventory[k]>0);
+  if(!gifts.length){toast('暂无礼物，请到商店购买');return}
+  S.modal='gift';render();
+}
+function giftTo(giftName){
+  if(!S_giftTarget)return;
+  const t=CFG.shop.find(x=>(x[0]===giftName||x[1]===giftName)&&x[3]==='gift');if(!t)return;
+  if(!S.game.inventory[giftName]){toast('无此礼物');return}
+  S.game.inventory[giftName]--;if(S.game.inventory[giftName]<=0)delete S.game.inventory[giftName];
+  const store=S_giftTarget.startsWith('min')?S.game.ministers:S.game.consorts;
+  store[S_giftTarget]=Math.min(100,(store[S_giftTarget]||0)+t[4]);
+  addLog(S.game,'向'+npcName(S_giftTarget)+'赠「'+giftName+'」，好感+' + t[4]);
+  autoSave();S.modal='npc';render();toast(npcName(S_giftTarget)+'好感 +'+t[4]);
+}
+function propose(npcId){
+  const c=S.game.c;
+  if(c.route!=='OFFICIAL'){toast('仅女官线可自主婚配');return}
+  if(c.married){toast('已有夫君');return}
+  if((S.game.ministers[npcId]||0)<96){toast('好感未达相许');return}
+  c.married=true;c.husband=npcName(npcId);
+  addLog(S.game,'奉旨与'+c.husband+'成婚，夫君助力职场。');
+  autoSave();S.modal=null;render();toast('佳偶天成，与'+c.husband+'成婚');
+}
+function rewardServant(i){
+  const sv=S.game.c.servants[i];if(!sv)return;
+  if(S.game.c.silver<10){toast('赏赐需10两');return}
+  S.game.c.silver-=10;sv.loyalty=Math.min(100,sv.loyalty+12);
+  addLog(S.game,'赏赐侍从'+sv.name+'，忠心提升。');autoSave();render();toast(sv.name+'忠心 +12');
+}
+function trainServant(i){
+  const sv=S.game.c.servants[i];if(!sv)return;
+  if(S.game.time.ap<1){toast('行动力不足');return}
+  spendAP(1);sv.ability+=8;sv.loyalty=Math.max(0,sv.loyalty-3);
+  addLog(S.game,'历练侍从'+sv.name+'，才干增长。');autoSave();render();toast(sv.name+'才干 +8');
+}
+function transit(mode){
+  const c=S.game.c;
+  if(c.route!=='MAID'){toast('仅宫女线可转线');return}
+  if(c.rank!=='ZHANG_SHI'){toast('需先晋升至掌事姑姑');return}
+  if(mode==='consort'){
+    c.route='CONSORT';c.rank='DA_YING';c.favor=20;c.prestige=0;
+    addLog(S.game,'承宠进封，转入妃嫔线，位分答应。');
+    toast('承宠进封为答应');
+  }else{
+    c.route='OFFICIAL';c.rank='DIAN_SHI';c.merit=120;c.reputation=35;
+    addLog(S.game,'考选及第，转入女官线，职级典事。');
+    toast('考选及第，转女官典事');
+  }
+  autoSave();S.modal=null;S.screen='main';render();
+}
+function syncName(){const el=document.getElementById('nameInput');if(S.draft&&el)S.draft.name=el.value.trim()}
+
+/* 景仁宫：妃嫔每月可向皇后请安一次，不耗行动力 */
+function visitJingren(){
+  const g=S.game,c=g.c,t=g.time;
+  if(c.route!=='CONSORT'){toast('仅妃嫔可入景仁宫请安');return}
+  if(g.lastJingren&&g.lastJingren.y===t.year&&g.lastJingren.m===t.month){
+    toast('本月已向皇后请安，下月再来');return
+  }
+  g.lastJingren={y:t.year,m:t.month};
+  const deltas=applyEffects({prestige:8,favor:2},{cnp_empress:6});
+  addLog(g,'前往景仁宫向皇后请安。');
+  S.flow={stage:'result',title:'景仁宫 · 请安',
+    resultText:'你整衣入景仁宫，向皇后恭请圣安。皇后温和赐座，几句寒暄间，你在宫中的分量又重了几分。',
+    deltas,promoted:null,yearEnd:false};
+  S.modal='event';autoSave();render();
+}
+/* 进入地点 */
+function enterLocation(id){
+  const c=S.game.c;
+  if(id==='jingRenGong'){visitJingren();return}
+  if(S.game.time.ap<1){toast('行动力不足，请先休息');return}
+  const loc=CFG.locations.find(l=>l[0]===id);
+  const routes=EVENTS[id]||{};
+  let pool=routes[c.route]||routes.ALL||[];
+  if(!pool.length){
+    // 通用兜底事件
+    pool=[{t:loc[1],x:'你来到'+loc[2]+'，四下静悄悄的，并无特别之事发生。',
+      c:[{l:'稍作停留便离开',e:{},r:'你转身离去。'}]}];
+  }
+  const ev=pick(pool);
+  spendAP(1);
+  S.flow={stage:'event',title:ev.t,event:ev,resultText:'',deltas:[],promoted:null,yearEnd:false};
+  S.modal='event';render();
+}
+/* 选择事件选项 */
+function chooseOption(i){
+  const f=S.flow,ch=f.event.c[i];
+  if(!ch)return;
+  f.deltas=applyEffects(ch.e||{},ch.a||{});
+  f.resultText=ch.r;
+  if(ch.special==='conceive'){
+    const c=S.game.c;
+    if(c.route==='CONSORT'&&rankIdx()>=3&&!S.game.pregnant){
+      const prob=Math.min(0.81,0.08+c.favor/300+c.attributes.constitution/250);
+      if(Math.random()<prob){
+        S.game.pregnant={months:10};
+        f.deltas.push({t:'已有身孕 · 十月后临盆',pos:true,k:'aff'});
+        addLog(S.game,'承恩侍寝，发现有孕。');
+      } else f.resultText+='（此次未能有孕，可再试）';
+    } else f.resultText+='（位分未达贵人，无缘侍寝）';
+  }
+  if(checkDeath())return;
+  const pr=tryPromote();if(pr)f.promoted=pr;
+  f.stage='result';render();autoSave();
+}
+/* 办理差事 */
+function doDuty(id){
+  const c=S.game.c;
+  if(S.game.time.ap<1){toast('行动力不足');return}
+  const def=DUTIES[c.route].find(d=>d.id===id);if(!def)return;
+  spendAP(def.cost);
+  const success=Math.random()<(1-def.diff);
+  const deltas=success?applyEffects(def.rw,{}):applyEffects({},{});
+  if(checkDeath())return;
+  if(!success)deltas.push({t:'差事失利',pos:false,k:'res'});
+  let promoted=null;
+  if(success&&def.promote&&c.rank===def.promote){
+    const rs=CFG.ranks[c.route],idx=rs.findIndex(r=>r[0]===c.rank);
+    if(idx<rs.length-1){c.rank=rs[idx+1][0];promoted=rs[idx+1][1];addLog(S.game,'晋升为「'+promoted+'」！')}
+  }
+  if(success)addLog(S.game,'完成差事「'+def.name+'」。');
+  S.flow={stage:'result',title:def.name,resultText:success?'差事办理妥当，收获颇丰。':'差事办砸了，蒙受损失。',
+    deltas,promoted,yearEnd:false};
+  S.modal='event';render();autoSave();
+}
+
+/* ---------- 7. 启动 ---------- */
+render();
+</script>
+</body>
+</html>
