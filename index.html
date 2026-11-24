@@ -172,6 +172,8 @@ body{
 .emp-portrait-card{display:flex;align-items:center;gap:14px;text-align:left}
 .emp-portrait{width:96px;height:128px;object-fit:cover;object-position:top center;flex-shrink:0;
   border-radius:8px;border:2px solid var(--gold);background:var(--paper2)}
+/* 太后头像：方形圆形构图，裁为圆形展示 */
+.emp-portrait.round{width:96px;height:96px;border-radius:50%;object-fit:cover;object-position:center}
 .emp-tag{display:inline-block;margin-top:5px;font-size:10px;padding:2px 8px;border-radius:10px;
   background:var(--red);color:#fff}
 .foot-note{text-align:center;font-size:10px;color:var(--muted);padding:10px;line-height:1.8}
@@ -980,6 +982,18 @@ function seedConsortChildren(g){
       mother:m[0],motherName:m[1],isMine:false,birthMother:m[1],
       fosterBy:null});
   });
+  autoSchoolOthers(g); // 开局已满六岁的他妃皇嗣自动入上书房
+}
+/* 他妃所出皇嗣满六岁自动入上书房（非主控亲生/领养），无需玩家操作、不耗行动力 */
+function autoSchoolOthers(g){
+  if(!g||!Array.isArray(g.children))return;
+  g.children.forEach(k=>{
+    if(k.isMine||k.adopted)return;           // 主控亲生/领养仍由玩家手动入学
+    if((k.age||0)<6)return;
+    if(k.school)return;
+    k.school=1;                               // 自动入学，学业自 1 起随月增长
+    addLog(g,'皇嗣「'+k.name+'」年满六岁，已按宫例送入上书房读书。');
+  });
 }
 /* 每月推进子嗣年龄 + 嫔妃有概率诞育新子嗣 */
 function monthlyChildren(g){
@@ -987,6 +1001,7 @@ function monthlyChildren(g){
     if(typeof k.age==='number')k.age+=1;
     if(k.school)k.school+=1; // 在上书房就学，学业随月增长
   });
+  autoSchoolOthers(g);
   if(g.c.route!=='CONSORT')return;
   if(Math.random()<0.28){
     const pool=liveConsorts(g).map(n=>[n.id,n.name]);
@@ -1059,6 +1074,7 @@ function migrate(g){
   if(!Array.isArray(c.servants))c.servants=Array.isArray(g.servants)?g.servants:[];
   if(!Array.isArray(g.children))g.children=[];
   g.children.forEach(k=>{if(!k.uid)k.uid=childUid();if(k.isMine===undefined)k.isMine=(!k.mother&&k.birthMother===c.name);if(!k.motherName)k.motherName=k.birthMother||'后宫妃嫔';if(k.adopted===undefined)k.adopted=false;if(k.heir===undefined)k.heir=null});
+  autoSchoolOthers(g); // 老档补齐：他妃所出满六岁自动入上书房
   if(!Array.isArray(g.dutyCompleted))g.dutyCompleted=[];
   if(!g.inventory)g.inventory={};
   if(g.pregnant===undefined)g.pregnant=null;
@@ -1865,6 +1881,9 @@ function modalHTML(){
       <span>${CFG.attrName[k]}</span><span class="sv">${c.attributes[k]}</span>
       <div class="bar"><i style="width:${c.attributes[k]}%"></i></div></div>`).join('');
     body=`<div class="card"><div style="text-align:center;margin-bottom:10px">
+        <div style="display:flex;justify-content:center;margin-bottom:8px">
+          <img class="emp-portrait round" src="${selfAvatar(c)}" alt="${esc(c.name)}" style="width:112px;height:112px" onerror="this.outerHTML='<div style=&quot;font-size:40px;width:112px;height:112px;line-height:112px;border-radius:50%;border:2px solid var(--gold);color:var(--gold)&quot;>👤</div>'">
+        </div>
         <div style="font-size:20px;color:var(--red);letter-spacing:2px">${c.name}</div>
         <div class="hint">${c.age}岁 · ${CFG.familyInfo[c.family].name} · ${rankName()}</div>
         ${c.route==='CONSORT'?`<div class="hint">帝宠阶段：${favorStage(c.favor)}（${c.favor}）｜威望 ${c.prestige}</div>`:''}
@@ -1960,9 +1979,9 @@ function modalHTML(){
       <div class="kid-acts">
         ${k.school?`<button class="btn sm" disabled>✅ 已入学</button>`:
           (k.isMine||k.adopted)?`<button class="btn sm primary" data-a="schoolEnroll" data-p="${k.uid}" ${apOut?'disabled':''}>📚 送入上学（耗1行动力）</button>`:
-          `<span class="hint">他妃所出，由生母安排入塾</span>`}
+          `<span class="hint">他妃所出，将由宫中安排入学</span>`}
       </div></div>`;
-    body=`<div class="card"><div class="hint" style="margin-top:0">上书房乃皇子公主读书之所。<b>年满六岁</b>方可入学，入学后可每月增长才情与心智。仅可将<b>亲生</b>或<b>收为养嗣</b>的皇嗣送入上学，他妃所出由其生母安排。</div></div>
+    body=`<div class="card"><div class="hint" style="margin-top:0">上书房乃皇子公主读书之所。<b>年满六岁</b>方可入学，入学后每月增长才情与心智。你的<b>亲生</b>或<b>收为养嗣</b>的皇嗣需你亲自送入上学（耗1行动力）；<b>他妃所出</b>的皇嗣年满六岁后将<b>自动入学</b>，无需操心。</div></div>
       <div class="sec-title" style="margin-top:0">可入学（已满六岁）<span class="sec-badge">${eligible.length}</span></div>
       ${eligible.length?eligible.map(schoolCard).join(''):`<div class="empty-tip">暂无年满六岁的皇嗣</div>`}
       ${young.length?`<div class="sec-title">年幼待长（未满六岁）<span class="sec-badge">${young.length}</span></div>
@@ -2101,7 +2120,7 @@ function modalHTML(){
     head='慈宁宫 · 太后';
     const cond=canDowagerEdict(g);
     body=`<div class="card emp-portrait-card">
-        <div style="font-size:56px;width:96px;text-align:center;line-height:96px">🕯️</div>
+        <img class="emp-portrait round" src="太后.jpg" alt="${esc(d.name)}" onerror="this.outerHTML='<div style=&quot;font-size:56px;width:96px;text-align:center;line-height:96px&quot;>🕯️</div>'">
         <div><div style="font-size:20px;color:var(--red);letter-spacing:4px">${esc(d.name)}</div>
         <div class="hint">先帝嫡母 · 当今皇太后</div><span class="emp-tag">慈和宽厚</span></div></div>
       <div class="card">
@@ -2607,6 +2626,17 @@ function claimHeir(uid){
 function palaceTier(c){
   for(const k of ['EMPRESS','HIGH','MID','LOW']) if(CFG.palaces[k].ranks.indexOf(c.rank)>=0) return k;
   return 'LOW';
+}
+/* 主控头像：按路线与位份取图
+   宫女线：粗使/普通/管事宫女→普通宫女像，掌事姑姑→掌事姑姑像
+   女官线：全职位通用一张；妃嫔线：低阶/中阶/高阶/皇后四档 */
+function selfAvatar(c){
+  if(c.route==='MAID'){
+    const ri=CFG.ranks.MAID.findIndex(r=>r[0]===c.rank);
+    return ri>=3?'self_maid_zhangshi.jpg':'self_maid_common.jpg';
+  }
+  if(c.route==='OFFICIAL')return 'self_official.jpg';
+  return {LOW:'self_low.jpg',MID:'self_mid.jpg',HIGH:'self_high.jpg',EMPRESS:'self_empress.jpg'}[palaceTier(c)]||'self_low.jpg';
 }
 function palacePoints(tier){
   const order=['LOW','MID','HIGH','EMPRESS'],idx=order.indexOf(tier);
